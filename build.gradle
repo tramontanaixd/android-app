@@ -1,34 +1,27 @@
-apply plugin: 'com.android.application'
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-android {
-    compileSdkVersion 27
-    defaultConfig {
-        applicationId "com.pierdr.pierluigidallarosa.myactivity"
-        minSdkVersion 15
-        targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+buildscript {
+    ext.kotlin_version = '1.2.30'
+    repositories {
+        google()
+        jcenter()
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
-    sourceSets { main { resources.srcDirs = ['src/main/resources', 'src/main/resources'] } }
 }
 
-dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    implementation files('/Users/pierluigi.dallarosa/PIER/Processing/libraries/Java-WebSocket/src/')
-    implementation files('/Users/local/Documents/Processing/modes/AndroidMode/processing-core.jar')
-    implementation files('/Users/local/Documents/Processing/modes/AndroidMode/mode/AndroidMode.jar')
-    implementation files('/Users/local/Documents/Processing/libraries/Ketai/library/Ketai.jar')
-    implementation files('/Users/local/Documents/Processing/libraries/apwidgets/library/apwidgets.jar')
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
