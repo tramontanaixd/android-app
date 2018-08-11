@@ -37,6 +37,7 @@ class Sketch extends PApplet {
     //SOCKETS
     private WebSocket attitudeSocket;
     private WebSocket touchSocket;
+    private WebSocket distanceSocket;
 
     private final WebSocket[] arraySockets = new WebSocket[2];
 
@@ -366,9 +367,22 @@ class Sketch extends PApplet {
         }
     }
 
+    @SuppressWarnings("unused") // called by KetaiSensor via reflection
+    public void onRotationVectorEvent(float x, float y, float z, long a, int b){
+        if(attitudeSocket!=null) {
+            attitudeSocket.send("{\"m\":\"a\",\"r\":\"" + x + "\",\"p\":\"" + y + "\",\"y\":\"" + z + "\"}");
+        }
+        else if(!isStillSensing())
+        {
+            System.out.println("stopping sensing from rotationVector");
+            stopAttitudeSensing();
+        }
+    }
+
     //SENSING DISTANCE
-    public void startDistanceSensing()
+    public void startDistanceSensing(WebSocket distanceSocket)
     {
+        this.distanceSocket = distanceSocket;
         if(sensor.isProximityAvailable()) {
             System.out.println("distance available");
             sensor.enableProximity();
@@ -395,6 +409,19 @@ class Sketch extends PApplet {
             if(!isStillSensing()) {
                 sensor.stop();
             }
+        }
+    }
+
+    @SuppressWarnings("unused") // called by KetaiSensor via reflection
+    public void onProximityEvent(float d, long a, int b){
+        if(distanceSocket!=null) {
+            distanceSocket.send("{\"m\":\"distanceChanged\",\"proximity\":\""+d+"\"}");
+        }
+        else if (!isStillSensing()) {
+
+            System.out.println("stopping sensing from proximity");
+            stopDistanceSensing();
+
         }
     }
 

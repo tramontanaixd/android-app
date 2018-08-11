@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                         class myRunTmp implements Runnable {
 
                             public void run() {
-                                sketch.startDistanceSensing();
+                                sketch.startDistanceSensing(socket);
                             }
                         }
 
@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                     }
                     else
                     {
-                        sketch.startDistanceSensing();
+                        sketch.startDistanceSensing(socket);
                     }
                 }
                 else if(directive.equals("releaseDistance"))
