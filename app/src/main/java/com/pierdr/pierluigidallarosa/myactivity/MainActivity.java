@@ -1,78 +1,49 @@
 package com.pierdr.pierluigidallarosa.myactivity;
 
-import com.pierdr.pierluigidallarosa.*;
-
 import android.content.Context;
-import android.content.pm.ActivityInfo;
+import android.content.Intent;
 import android.content.res.Configuration;
-import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.Vibrator;
-import android.support.constraint.ConstraintLayout;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
-import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-
-import ketai.camera.KetaiCamera;
-import ketai.net.KetaiNet;
-import processing.android.PFragment;
-import processing.android.CompatUtils;
-import processing.core.*;
-
-//IMPORT WEBSOCKET
-
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
-
 import org.java_websocket.drafts.Draft_6455;
-import org.w3c.dom.Text;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//import static processing.core.PGraphics.R;
+import ketai.net.KetaiNet;
+import processing.android.CompatUtils;
+import processing.android.PFragment;
+
+//IMPORT WEBSOCKET
 
 
 public class MainActivity extends AppCompatActivity implements WebsocketManager.websocketManagerListener {
     private Sketch sketch;
     private TextView ipAddressView;
-    private String ipAddress;
     public WebsocketManager wsm;
     private VideoView videoView;
 
     public boolean isStarted=false;
     FrameLayout frame;
-
-    //INPUTS
-    private ArrayList<WebSocket> arrayAttitude;
-    private ArrayList<WebSocket> arrayOrientation;
-    private ArrayList<WebSocket> arrayTouch;
-
-    private WebSocket attitudeSocket;
-    private WebSocket orientationSocket;
-    private WebSocket touchSocket;
-
 
     //OUTPUTS
     private CameraManager mCameraManager;
@@ -110,9 +81,8 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         }
 
         //CHECK IP ADDRESS
-        ipAddressView = (TextView) findViewById(R.id.ipAddressView);
+        ipAddressView = findViewById(R.id.ipAddressView);
         checkIpAddress();
-        ipAddress = "--";
 
         //SETUP OUTPUTS
         vibrer = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -122,13 +92,8 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         StrictMode.setThreadPolicy(policy);
 
         //INITIALIZE INPUTS
-        arrayAttitude       = new ArrayList <WebSocket>();
-        arrayOrientation    = new ArrayList <WebSocket>();
-        arrayTouch          = new ArrayList <WebSocket>();
+        System.out.print("tramontana started1");
 
-        System.out.printf("tramontana started1");
-
-       // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     public void checkIpAddress()
@@ -142,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                     @Override
                     public void run() {
                         ipAddressView.setText(KetaiNet.getIP());
-                        ipAddress = KetaiNet.getIP();
                     }
                 });
                 checkIpAddress();
@@ -179,8 +143,8 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[],
-                                           int[] grantResults) {
+                                           @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
         if (sketch != null) {
             sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
@@ -197,9 +161,9 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         System.out.println("received a message");
         System.out.println(message);
         class OneShotTask implements Runnable {
-                        String message;
-                        WebSocket socket;
-            OneShotTask(String message, WebSocket socket) {
+                        final String message;
+                        final private WebSocket socket;
+            private OneShotTask(String message, WebSocket socket) {
                 this.message  = message;
                 this.socket   = socket;
             }
@@ -216,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                 }
                 else if(directive.equals("setColor"))
                 {
-                    int red=0,green=0,blue=0,alpha=0;
+                    int red,green,blue,alpha;
                     System.out.println(json.getString("r").contains("."));
                     if(json.getString("r").contains("."))
                     {
@@ -248,16 +212,12 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                 {
                     onPlayVideo(json.getString("url"));
                 }
-                else if(directive.equals("playAudio"))
-                {
-
-                }
                 else if(directive.equals("registerTouch") || directive.equals("registerTouchDrag"))
                 {
                     boolean hasMultiTouch = false;
                     if(json.hasKey("multi"))
                     {
-                        hasMultiTouch = (json.getInt("multi")==1)?true:false;
+                        hasMultiTouch = json.getInt("multi") == 1;
                     }
                     if(!isStarted)
                     {
@@ -267,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                             private boolean multi;
                             private boolean drag;
 
-                            public myRunTmp(boolean multi, boolean drag) {
+                            private myRunTmp(boolean multi, boolean drag) {
                                 this.multi = multi;
                                 this.drag = drag;
                             }
@@ -278,11 +238,11 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                         }
 
                         Handler handler = new Handler();
-                        handler.postDelayed(new myRunTmp(hasMultiTouch,directive.equals("registerTouchDrag")?true:false), 500);
+                        handler.postDelayed(new myRunTmp(hasMultiTouch, directive.equals("registerTouchDrag")), 500);
                     }
                     else
                     {
-                        sketch.startTouchListening(socket,hasMultiTouch,directive.equals("registerTouchDrag")?true:false );
+                        sketch.startTouchListening(socket,hasMultiTouch, directive.equals("registerTouchDrag"));
                     }
                 }
 
@@ -300,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                         class myRunTmp implements Runnable {
 
                             public void run() {
-                                sketch.startDistanceSensing(socket);
+                                sketch.startDistanceSensing();
                             }
                         }
 
@@ -310,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                     }
                     else
                     {
-                        sketch.startDistanceSensing(socket);
+                        sketch.startDistanceSensing();
                     }
                 }
                 else if(directive.equals("releaseDistance"))
@@ -321,17 +281,13 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                 }
                 else if(directive.equals("registerAttitude"))
                 {
-//                    if(!socket.equals(attitudeSocket))
-//                    {
-//                        attitudeSocket = socket;
-//                    }
                     if(!isStarted) {
                         startProcessingSketch();
                         class myRunTmp implements Runnable {
 
                             private float f;
 
-                            public myRunTmp(float f) {
+                            private myRunTmp(float f) {
                                 this.f = f;
                             }
 
@@ -367,25 +323,18 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
     {
         vibrer.vibrate(100);
     }
-    public void onPlayAudio(String filename){
-
-    }
     public void onSetFlashLight(float value){
 
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String mCameraId = "";
+                    String mCameraId;
                     try {
                         mCameraId = mCameraManager.getCameraIdList()[0];
-                        mCameraManager.setTorchMode(mCameraId, (value>0)?true:false);
+                        mCameraManager.setTorchMode(mCameraId, value > 0);
                         System.out.println("setting torchMode");
                     } catch (CameraAccessException e) {
                         e.printStackTrace();
                     }
-                }
-                else
-                {
-
                 }
             } catch (Exception e) {
                 System.out.println("flash not available");
@@ -400,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         if(sketch.isResourceLocal(filename))
         {
             //LOAD LOCAL FILE
-            while(filename.indexOf("/")!=-1)
+            while(filename.contains("/"))
             {
                 filename = filename.replace("/","");
             }
@@ -411,14 +360,13 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         {
             sketch.getMediaFromURL(filename);
         }
-        sketch.changeState(sketch.PLAY_VIDEO);
+        sketch.changeState(Sketch.PLAY_VIDEO);
     }
     public void startPlayingVideo(String localVideoSrc)
     {
         try {
-            videoView = (VideoView) new VideoView(this);
-            frame.addView(videoView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
-           // Uri video = Uri.parse(getFilesDir() + "/" + localVideoSrc);
+            videoView = new VideoView(this);
+            frame.addView(videoView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             videoView.setVideoPath(getFilesDir() + "/" + localVideoSrc);
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
@@ -427,15 +375,10 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                     videoView.start();
                 }
             });
-//            //MediaPlayer mp = new MediaPlayer();
-//            MediaPlayer mp = MediaPlayer.create( this, Uri.parse(getFilesDir() + "/" + localVideoSrc));
-//            // mp.setDataSource(getContext().getFilesDir() + "/" + localVideoSrc);
-//            mp.prepare();
-//            mp.start();
         }
         catch(Exception e)
         {
-            System.out.println(e);
+            e.printStackTrace(System.out);
         }
 
 
@@ -464,9 +407,6 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
 
     public void onNewConnection(String newDevice){
         cm.addNewMessage("connection open with "+newDevice);
-    }
-    public void onLostConnection(WebSocket socket){
-        sketch.lostConnection(socket);
     }
 
     @Override

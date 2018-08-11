@@ -2,13 +2,7 @@ package com.pierdr.pierluigidallarosa.myactivity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.widget.FrameLayout;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
 import org.java_websocket.WebSocket;
 
@@ -19,75 +13,50 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
-
+import ketai.sensors.KetaiSensor;
 import processing.core.PApplet;
-
-import ketai.sensors.*;
 import processing.event.TouchEvent;
-//import processing.core.PImage;
-//import apwidgets.*;
 
 public class Sketch extends PApplet {
-    int bgRed=255,bgGreen=255,bgBlue=255;
-    processing.core.PImage imageToDisplay;
-//    APVideoView videoView;
-//    APWidgetContainer videoContainer;
+    private int bgRed=255,bgGreen=255,bgBlue=255;
+    private processing.core.PImage imageToDisplay;
 
     /***
      STATES
      ***/
-    public int state;
+    private int state;
 
-    static final int SHOW_IMAGE            = 1;
-    static final int SHOW_BG               = 2;
+    private static final int SHOW_IMAGE            = 1;
+    private static final int SHOW_BG               = 2;
     static final int PLAY_VIDEO            = 3;
 
     //SENSORS
-    KetaiSensor sensor;
+    private KetaiSensor sensor;
 
     //SOCKETS
-    WebSocket attitudeSocket;
-    WebSocket touchSocket;
-    WebSocket distanceSocket;
-    WebSocket magneticSocket;
-    WebSocket orientationSocket;
+    private WebSocket attitudeSocket;
+    private WebSocket touchSocket;
 
-    //HashMap<String,WebSocket> arraySockets;
+    private WebSocket[] arraySockets = new WebSocket[2];
 
-    WebSocket arraySockets[] = {attitudeSocket,touchSocket,distanceSocket,magneticSocket,orientationSocket};
+    private final static int ATTITUDE       = 0;
+    private final static int TOUCH          = 1;
 
-    final static int ATTITUDE       = 0;
-    final static int TOUCH          = 1;
-    final static int DISTANCE       = 2;
-    final static int MAGNETIC       = 3;
-    final static int ORIENTATION    = 4;
+    private final static int TOUCH_INACTIVE         = 0;
+    private final static int TOUCH_LISTENING        = 1;
+    private final static int TOUCH_LISTENING_MULTI  = 2;
+    private final static int TOUCH_DRAG_LISTENING   = 3;
 
-    final static int TOUCH_INACTIVE         = 0;
-    final static int TOUCH_LISTENING        = 1;
-    final static int TOUCH_LISTENING_MULTI  = 2;
-    final static int TOUCH_DRAG_LISTENING   = 3;
-
-    int touchState = TOUCH_INACTIVE;
+    private int touchState = TOUCH_INACTIVE;
     private TouchEvent.Pointer lastEvents[];
 
     public void settings() {
-//        size(600, 600);
         fullScreen();
-
-        //background(255);
-
     }
 
     public void setup() {
-//        videoContainer = new APWidgetContainer(this);
-
         sensor = new KetaiSensor(this);
-        //arraySockets = new HashMap <String,WebSocket>();
-        // imageToDisplay = new processing.core.PImage(10,10,ARGB);
-
     }
 
     public void draw() {
@@ -126,7 +95,7 @@ public class Sketch extends PApplet {
     public void showImage(String imageName) {
         if (isResourceLocal(imageName)) {
             //LOAD LOCAL FILE
-            while (imageName.indexOf("/") != -1) {
+            while (imageName.contains("/")) {
                 imageName = imageName.replace("/", "");
             }
             imageToDisplay = new processing.core.PImage(BitmapFactory.decodeFile(getContext().getFilesDir() + "/" + imageName));
@@ -137,13 +106,9 @@ public class Sketch extends PApplet {
         changeState(SHOW_IMAGE);
 
     }
-    public void playVideo(String mediaName)
-    {
-
-    }
     boolean isResourceLocal(String name)
     {
-        while(name.indexOf("/")!=-1)
+        while(name.contains("/"))
         {
             name = name.replace("/","");
         }
@@ -166,11 +131,11 @@ public class Sketch extends PApplet {
         {
             touchState = TOUCH_DRAG_LISTENING;
         }
-        else if(multi && !drag)
+        else if(multi)
         {
             touchState = TOUCH_LISTENING_MULTI;
         }
-        else if(!multi && !drag)
+        else if(!drag)
         {
             touchState = TOUCH_LISTENING;
         }
@@ -199,10 +164,6 @@ public class Sketch extends PApplet {
 
     public void touchMoved() {
         lastEvents = touches;
-        if(touchState==TOUCH_DRAG_LISTENING)
-        {
-
-        }
     }
 
     public void touchEnded() {
@@ -221,11 +182,11 @@ public class Sketch extends PApplet {
         }
     }
 
-    public void saveBitmapToFile(String filename,Bitmap bitmap)
+    private void saveBitmapToFile(String filename, Bitmap bitmap)
     {
         FileOutputStream out = null;
         try {
-            while(filename.indexOf("/")!=-1)
+            while(filename.contains("/"))
             {
                 filename = filename.replace("/","");
             }
@@ -247,11 +208,10 @@ public class Sketch extends PApplet {
         }
     }
 
-    public void getBitmapFromURL(String src) {
+    private void getBitmapFromURL(String src) {
 
         class RetrieveImage extends AsyncTask<String, Void, Void> {
 
-            private Exception exception;
             private Bitmap bitmapToLoad;
             private String src;
             protected Void doInBackground(String... urls) {
@@ -287,25 +247,20 @@ public class Sketch extends PApplet {
     {
         class RetrieveMedia extends AsyncTask<String, Void, Void> {
 
-            private Exception exception;
             private InputStream input;
-            private String src;
             protected Void doInBackground(String... urls) {
                 try {
 
                     URL url = new URL(urls[0]);
-                    src = urls[0];
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setDoInput(true);
                     connection.connect();
                     input = connection.getInputStream();
 
                     System.out.println("media loaded \n"+urls[0]);
-                    //return myBitmap;
                 } catch (IOException e) {
                     // Log exception
                     System.out.println("error retrieving media:\n "+e);
-                    //return null;
                 }
                 return null;
             }
@@ -317,7 +272,7 @@ public class Sketch extends PApplet {
                 System.out.println("starting to save media to disk");
                 try {
 
-                    while(localMediaSrc.indexOf("/")!=-1)
+                    while(localMediaSrc.contains("/"))
                     {
                         localMediaSrc = localMediaSrc.replace("/","");
                     }
@@ -345,7 +300,6 @@ public class Sketch extends PApplet {
                         input.close();
 
                         ((MainActivity)getActivity()).startPlayingVideo(localMediaSrc);
-                        //startPlayingVideo(localMediaSrc);
                     }
                     catch ( IOException e ) {
                         e.printStackTrace();
@@ -411,21 +365,10 @@ public class Sketch extends PApplet {
             }
         }
     }
-    public void onRotationVectorEvent(float x, float y, float z, long a, int b){
-        if(attitudeSocket!=null) {
-            attitudeSocket.send("{\"m\":\"a\",\"r\":\"" + x + "\",\"p\":\"" + y + "\",\"y\":\"" + z + "\"}");
-        }
-        else if(!isStillSensing())
-        {
-            System.out.println("stopping sensing from rotationVector");
-            stopAttitudeSensing();
-        }
-    }
 
     //SENSING DISTANCE
-    public void startDistanceSensing(WebSocket distanceSocket)
+    public void startDistanceSensing()
     {
-        this.distanceSocket = distanceSocket;
         if(sensor.isProximityAvailable()) {
             System.out.println("distance available");
             sensor.enableProximity();
@@ -442,8 +385,8 @@ public class Sketch extends PApplet {
     public void stopDistanceSensing()
     {
         System.out.println("stopping distance sensing:"+ isStillSensing());
-        for(int i=0;i<arraySockets.length;i++) {
-            System.out.println(arraySockets[i]);
+        for (WebSocket arraySocket : arraySockets) {
+            System.out.println(arraySocket);
         }
         System.out.println(attitudeSocket);
         sensor.disableProximity();
@@ -454,42 +397,14 @@ public class Sketch extends PApplet {
             }
         }
     }
-    public void onProximityEvent(float d, long a, int b){
-        if(distanceSocket!=null) {
-            distanceSocket.send("{\"m\":\"distanceChanged\",\"proximity\":\""+d+"\"}");
-        }
-        else if (!isStillSensing()) {
 
-                System.out.println("stopping sensing from proximity");
-                stopDistanceSensing();
-
-        }
-    }
-
-    ///GENERAL SENSING METHODS
-    public boolean isStillSensing()
+    private boolean isStillSensing()
     {
-        for(int i=0;i<arraySockets.length;i++) {
-            if(arraySockets[i]!=null) {
+        for (WebSocket arraySocket : arraySockets) {
+            if (arraySocket != null) {
                 return true;
             }
         }
         return false;
     }
-    public void lostConnection(WebSocket socket)
-    {
-        for(int i=0;i<arraySockets.length;i++) {
-            if(arraySockets[i]!=null) {
-                if (socket.equals(arraySockets[i])) {
-                    arraySockets[i] = null;
-                }
-            }
-        }
-    }
-//    public void onAccelerometerEvent(float x, float y, float z, long a, int b)
-//    {
-//        //System.out.println(x+","+y+","+z);
-//        attitudeSocket.send("{\"m\":\"a\",\"r\":\""+x+"\",\"p\":\""+y+"\",\"y\":\""+z+"\"}");
-//    }
-
 }
