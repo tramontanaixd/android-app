@@ -39,15 +39,14 @@ import processing.android.PFragment;
 public class MainActivity extends AppCompatActivity implements WebsocketManager.websocketManagerListener {
     private Sketch sketch;
     private TextView ipAddressView;
-    public WebsocketManager wsm;
     private VideoView videoView;
 
-    public boolean isStarted=false;
-    FrameLayout frame;
+    private boolean isStarted=false;
+    private FrameLayout frame;
 
     //OUTPUTS
     private CameraManager mCameraManager;
-    public Vibrator vibrer;
+    private Vibrator vibrer;
     //CONSOLE
     private ConsoleManager cm;
 
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         WebSocketImpl.DEBUG = false;
         int port = 9092;
         try {
-            wsm = new WebsocketManager(port, new Draft_6455());
+            WebsocketManager wsm = new WebsocketManager(port, new Draft_6455());
             wsm.addAListener(this);
 
             wsm.setConnectionLostTimeout(0);
@@ -96,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
 
     }
 
-    public void checkIpAddress()
+    private void checkIpAddress()
     {
 
         new Timer().schedule(new TimerTask() {
@@ -122,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         toastTmp.show();
         startProcessingSketch();
     }
-    public void startProcessingSketch()
+    private void startProcessingSketch()
     {
         if(!isStarted) {
             //START PROCESSING
@@ -319,11 +318,11 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
 
     }
 
-    public void onMakeVibrate()
+    private void onMakeVibrate()
     {
         vibrer.vibrate(100);
     }
-    public void onSetFlashLight(float value){
+    private void onSetFlashLight(float value){
 
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -342,10 +341,10 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
 
     }
 
-    public void onShowImage(String filename){
+    private void onShowImage(String filename){
         sketch.showImage(filename);
     }
-    public void onPlayVideo(String filename){
+    private void onPlayVideo(String filename){
         if(sketch.isResourceLocal(filename))
         {
             //LOAD LOCAL FILE
@@ -385,13 +384,13 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
         System.out.println("playing video: "+localVideoSrc);
 
     }
-    public void onSetBrightness(float brightness){
+    private void onSetBrightness(float brightness){
 
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.screenBrightness = brightness;
         getWindow().setAttributes(lp);
     }
-    public void onSetColor(int red, int green, int blue, int alpha)
+    private void onSetColor(int red, int green, int blue, int alpha)
     {
         System.out.println("starting sketch");
         startProcessingSketch();

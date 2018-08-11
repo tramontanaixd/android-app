@@ -18,7 +18,7 @@ import ketai.sensors.KetaiSensor;
 import processing.core.PApplet;
 import processing.event.TouchEvent;
 
-public class Sketch extends PApplet {
+class Sketch extends PApplet {
     private int bgRed=255,bgGreen=255,bgBlue=255;
     private processing.core.PImage imageToDisplay;
 
@@ -38,7 +38,7 @@ public class Sketch extends PApplet {
     private WebSocket attitudeSocket;
     private WebSocket touchSocket;
 
-    private WebSocket[] arraySockets = new WebSocket[2];
+    private final WebSocket[] arraySockets = new WebSocket[2];
 
     private final static int ATTITUDE       = 0;
     private final static int TOUCH          = 1;

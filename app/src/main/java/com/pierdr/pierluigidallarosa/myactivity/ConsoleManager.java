@@ -3,10 +3,10 @@ package com.pierdr.pierluigidallarosa.myactivity;
 import android.widget.TextView;
 
 
-public class ConsoleManager {
-    public TextView c1;
+class ConsoleManager {
+    private final TextView c1;
 
-    private String[] messages;
+    private final String[] messages;
     ConsoleManager(TextView c1)
     {
         this.c1 = c1;
