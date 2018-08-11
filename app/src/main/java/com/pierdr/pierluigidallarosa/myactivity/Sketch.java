@@ -225,6 +225,7 @@ class Sketch extends PApplet {
                     connection.connect();
                     InputStream input = connection.getInputStream();
                     bitmapToLoad = BitmapFactory.decodeStream(input);
+                    // TODO replace this with Picasso
                     imageToDisplay = new processing.core.PImage(bitmapToLoad);
 
 
