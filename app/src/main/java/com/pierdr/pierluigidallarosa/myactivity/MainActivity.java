@@ -36,7 +36,7 @@ import processing.android.PFragment;
 //IMPORT WEBSOCKET
 
 
-public class MainActivity extends AppCompatActivity implements WebsocketManager.websocketManagerListener {
+public class MainActivity extends AppCompatActivity implements WebsocketManager.WebsocketManagerListener {
     private Sketch sketch;
     private TextView ipAddressView;
     private VideoView videoView;
