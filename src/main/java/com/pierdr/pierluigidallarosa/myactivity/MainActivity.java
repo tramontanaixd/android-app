@@ -233,12 +233,38 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                     }
                     onSetColor(red,green,blue,alpha);
                 }
+                else if(directive.equals("transitionColors"))
+                {
+
+                }
                 else if(directive.equals("setBrightness")) {
                     onSetBrightness(json.getFloat("b"));
                 }
                 else if(directive.equals("setLED")) {
                     //startProcessingSketch();
                     onSetFlashLight(json.getFloat("in"));
+                }
+                else if(directive.equals("pulseLED")) {
+                    //TODO TO BE IMPLEMENTED
+                    /*IT WORKS AS FOLLOW:
+                        receives 3 parameters:
+                        1. duration
+                        2. times
+                        3. intensity
+
+                        The incoming message is:
+                        "{\"m\":\"pulseLED\",\"t\":\""+numberOfPulses+"\",\"d\":\""+duration+"\",\"i\":\""+intensity+"\"}"
+                        The method might be something like:
+
+                        onPulseFlashLight(json.getFloat("t"),json.getFloat("i"),json.getFloat("d"));
+
+                    */
+
+                }
+                else if(directive.equals("getBattery")) {
+                    //TODO TO BE IMPLEMENTED
+                    //RETURNS A MESSAGE LIKE
+                    // "{\"m\":\"battery\",\"v\":\"0.05\"}"
                 }
                 else if(directive.equals("showImage"))
                 {
@@ -247,11 +273,18 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                 else if(directive.equals("playVideo"))
                 {
                     onPlayVideo(json.getString("url"));
+                    //TODO WHEN VIDEO ENDED SHOULD SEND A MESSAGE TO CLIENT LIKE:
+                    //"{\"m\":\"videoEnded\"}"
+                }
+                else if(directive.equals("loopVideo"))
+                {
+                    //TODO TO BE IMPLEMENTED
                 }
                 else if(directive.equals("playAudio"))
                 {
-
+                    //TODO TO BE IMPLEMENTED
                 }
+                //--------------------------------------------------------------
                 else if(directive.equals("registerTouch") || directive.equals("registerTouchDrag"))
                 {
                     boolean hasMultiTouch = false;
@@ -292,6 +325,43 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
                         sketch.stopTouchListening();
                     }
                 }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerAudioJack"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseAudioJack"))
+                {
+                    //TODO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerOrientation"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseOrientation"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerMagnetometer"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseMagnetometer"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerPowerSource"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releasePowerSource"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
                 else if(directive.equals("registerDistance"))
                 {
                     if(!isStarted)
@@ -415,6 +485,7 @@ public class MainActivity extends AppCompatActivity implements WebsocketManager.
     }
     public void startPlayingVideo(String localVideoSrc)
     {
+
         try {
             videoView = (VideoView) new VideoView(this);
             frame.addView(videoView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
