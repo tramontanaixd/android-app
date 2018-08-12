@@ -30,6 +30,7 @@ sealed class Directive {
 
     data class PlayVideo(
             val url: String
+            // TODO loop flag
     ) : Directive()
 
     data class RegisterTouch(
@@ -48,5 +49,34 @@ sealed class Directive {
     ) : Directive()
 
     object ReleaseAttitude : Directive()
+
+    // TODO directive transitionColors
+    // TODO directive pulseLED
+    /*IT WORKS AS FOLLOW:
+        receives 3 parameters:
+        1. duration
+        2. times
+        3. intensity
+
+        The incoming message is:
+        "{\"m\":\"pulseLED\",\"t\":\""+numberOfPulses+"\",\"d\":\""+duration+"\",\"i\":\""+intensity+"\"}"
+        The method might be something like:
+
+        onPulseFlashLight(json.getFloat("t"),json.getFloat("i"),json.getFloat("d"));
+
+    */
+    // TODO directive getBattery
+    //RETURNS A MESSAGE LIKE
+    // "{\"m\":\"battery\",\"v\":\"0.05\"}"
+    // TODO directive playAudio
+    // TODO directive registerAudioJack
+    // TODO directive releaseOrientation
+    // TODO directive registerMagnetometer
+    // TODO directive releasePowerSource
+    // TODO directive registerAudioJack
+    // TODO directive releaseOrientation
+    // TODO directive registerMagnetometer
+    // TODO directive releasePowerSource
+
 }
 

@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private CameraManager mCameraManager;
     private ConsoleManager cm;
 
+    // TODO verify bug reported by Pier: UI resets after sometime and even if you can still hit the phone via Websockets it doesn't affect the phone
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                     videoView.start();
                 }
             });
+            // TODO try videoView.setClickable(false) to let the underlying sketch receive touch events.
         }
         catch(Exception e)
         {
