@@ -1,4 +1,4 @@
-package com.pierdr.pierluigidallarosa.myactivity
+package com.pierdr.pierluigidallarosa.myactivity.websocket
 
 import org.java_websocket.WebSocket
 import org.java_websocket.drafts.Draft
