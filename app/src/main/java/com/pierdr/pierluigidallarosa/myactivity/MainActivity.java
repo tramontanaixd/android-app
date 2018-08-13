@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private CameraManager mCameraManager;
     private ConsoleManager cm;
 
-    // TODO verify bug reported by Pier: UI resets after sometime and even if you can still hit the phone via Websockets it doesn't affect the phone
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         cm = new ConsoleManager((TextView)findViewById(R.id.consoleLog));
 
-        // TODO stop it on onDestroy
+        // TODO stop connections and server while the activity is paused
         (new Controller(this)).start();
 
         //CHECK IP ADDRESS

@@ -30,7 +30,6 @@ sealed class Directive {
 
     data class PlayVideo(
             val url: String
-            // TODO loop flag
     ) : Directive()
 
     data class RegisterTouch(
@@ -65,6 +64,7 @@ sealed class Directive {
         onPulseFlashLight(json.getFloat("t"),json.getFloat("i"),json.getFloat("d"));
 
     */
+    // TODO directive loopVideo
     // TODO directive getBattery
     //RETURNS A MESSAGE LIKE
     // "{\"m\":\"battery\",\"v\":\"0.05\"}"
