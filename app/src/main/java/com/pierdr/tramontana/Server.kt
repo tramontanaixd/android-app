@@ -18,6 +18,11 @@ class Server {
     private val TAG = javaClass.simpleName
     private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
 
+    /**
+     * Starts the server.
+     *
+     * This method will suspend until the server is successfully started, or an error occurs.
+     */
     suspend fun start() = suspendCoroutine<Unit> { continuation ->
         WebSocketImpl.DEBUG = false
         websocketServer.connectionLostTimeout = 0
@@ -39,11 +44,20 @@ class Server {
 
     }
 
+    /**
+     * Stops the server. As per [org.java_websocket.server.WebSocketServer] documentation, this will
+     * also stop all the connections.
+     */
     fun stop() {
         Log.d(TAG, "stopping server")
         websocketServer.stop()
     }
 
+    /**
+     * Returns a [ReceiveChannel] that emits [ClientSession]s every time a new Tramontana client
+     * connects to us. Only one connection at a time is supported. The channel stops when the server
+     * is stopped.
+     */
     fun produceClientSessions() = produce<ClientSession> {
         suspendCoroutine<Unit> { sessionsContinuation ->
             websocketServer.attachBehavior(object : WebSocketServerBehavior() {
@@ -88,13 +102,6 @@ class Server {
     }
 }
 
-interface ClientSession {
-    fun sendEvent()
-    fun produceDirectives(): ReceiveChannel<Directive>
-    fun close()
-}
-
-fun ClientSession.isClosed() = produceDirectives().isClosedForReceive
 class WebSocketClientSession(
         val connection: WebSocket
 ) : ClientSession {
