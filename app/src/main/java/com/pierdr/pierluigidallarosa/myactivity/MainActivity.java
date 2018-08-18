@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -106,51 +105,6 @@ public class MainActivity extends AppCompatActivity {
         if (sketch != null) {
             sketch.onNewIntent(intent);
         }
-    }
-
-    public void startDistanceSensing() {
-        runWhenSketchIsReady(new Runnable() {
-            @Override
-            public void run() {
-                // FIXME let the sketch obtain the current websocket
-                sketch.startDistanceSensing(null);
-            }
-        });
-    }
-
-    public void stopDistanceSensing() {
-        if (isStarted) {
-            sketch.stopDistanceSensing();
-        }
-    }
-
-    public void startAttitudeSensing(final float updateRate) {
-        runWhenSketchIsReady(new Runnable() {
-            @Override
-            public void run() {
-                // FIXME let the sketch obtain the current websocket
-                sketch.startAttitudeSensing(updateRate, null);
-            }
-        });
-    }
-
-    public void stopAttitudeSensing() {
-        if(isStarted) {
-            sketch.stopAttitudeSensing();
-        }
-    }
-
-    private void runWhenSketchIsReady(Runnable task) {
-        if (isStarted) {
-            task.run();
-            return;
-        }
-
-        startProcessingSketch();
-
-        Handler handler = new Handler();
-        // TODO wait for some signal from the sketch instead of waiting
-        handler.postDelayed(task, 500);
     }
 
     public void showImage(String filename){

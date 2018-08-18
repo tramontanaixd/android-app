@@ -18,13 +18,8 @@ class AndroidDirectiveExecutor(
 
     private fun executeDirectiveOnUiThread(directive: Directive) {
         when (directive) {
-            is Directive.SetBrightness -> activity.setBrightness(directive.brightness)
             is Directive.ShowImage -> activity.showImage(directive.url)
             is Directive.PlayVideo -> activity.playVideo(directive.url)
-            is Directive.RegisterDistance -> activity.startDistanceSensing()
-            is Directive.ReleaseDistance -> activity.stopDistanceSensing()
-            is Directive.RegisterAttitude -> activity.startAttitudeSensing(directive.updateRate)
-            is Directive.ReleaseAttitude -> activity.stopAttitudeSensing()
             else -> TODO("this code will all go away in favor of ShowtimeFragment")
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }

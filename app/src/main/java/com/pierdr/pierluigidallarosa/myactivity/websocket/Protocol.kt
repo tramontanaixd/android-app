@@ -68,15 +68,29 @@ class Protocol {
         is Event.TouchDown -> {
             JSONObject()
                     .setString("m", "touchedDown")
-                    .setString("x", event.x.toString())
-                    .setString("y", event.y.toString())
+                    .setString("x", "${event.x}")
+                    .setString("y", "${event.y}")
                     .toString()
         }
         is Event.Touched -> {
             JSONObject()
                     .setString("m", "touched")
-                    .setString("x", event.x.toString())
-                    .setString("y", event.y.toString())
+                    .setString("x", "${event.x}")
+                    .setString("y", "${event.y}")
+                    .toString()
+        }
+        is Event.Attitude -> {
+            JSONObject()
+                    .setString("m", "a")
+                    .setString("r", "${event.roll}")
+                    .setString("p", "${event.pitch}")
+                    .setString("y", "${event.yaw}")
+                    .toString()
+        }
+        is Event.Distance -> {
+            JSONObject()
+                    .setString("m", "distanceChanged")
+                    .setString("proximity", "${event.distance}")
                     .toString()
         }
     }

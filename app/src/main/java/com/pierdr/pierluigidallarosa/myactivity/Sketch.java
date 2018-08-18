@@ -6,8 +6,7 @@ import android.os.AsyncTask;
 
 import com.pierdr.tramontana.Event;
 import com.pierdr.tramontana.EventSink;
-
-import org.java_websocket.WebSocket;
+import com.pierdr.tramontana.UserReporter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,14 +36,8 @@ public class Sketch extends PApplet {
     //SENSORS
     private KetaiSensor sensor;
 
-    //SOCKETS
-    private WebSocket attitudeSocket;
-    private WebSocket distanceSocket;
-
-    private final WebSocket[] arraySockets = new WebSocket[2];
-
-    private final static int ATTITUDE       = 0;
-    private final static int TOUCH          = 1;
+    private boolean sensingDistance;
+    private boolean sensingAttitude;
 
     private final static int TOUCH_INACTIVE         = 0;
     private final static int TOUCH_LISTENING        = 1;
@@ -55,9 +48,11 @@ public class Sketch extends PApplet {
     private TouchEvent.Pointer lastEvents[];
 
     private final EventSink eventSink;
+    private final UserReporter userReporter;
 
-    public Sketch(EventSink eventSink) {
+    public Sketch(EventSink eventSink, UserReporter userReporter) {
         this.eventSink = eventSink;
+        this.userReporter = userReporter;
     }
 
     public void settings() {
@@ -66,6 +61,9 @@ public class Sketch extends PApplet {
 
     public void setup() {
         sensor = new KetaiSensor(this);
+        sensor.enableProximity();
+        sensor.enableRotationVector();
+        sensor.start();
     }
 
     public void draw() {
@@ -341,102 +339,48 @@ public class Sketch extends PApplet {
 
     }
     //SENSORS
-    public void startAttitudeSensing(Float f, WebSocket attitudeSocket)
-    {
-        System.out.println("f:"+f+"and delay"+(int)(10000.0/f)+ "socket:\n"+attitudeSocket);
-        this.attitudeSocket = attitudeSocket;
-        arraySockets[ATTITUDE] = attitudeSocket;
-
-        sensor.setDelayInterval((int)(1000/f));
-
-        if(sensor.isAccelerometerAvailable()) {
-            sensor.enableRotationVector();
-            if(!sensor.isStarted())
-            {
-                sensor.start();
-            }
+    public void startAttitudeSensing(Float frameRate) {
+        if (!sensor.isAccelerometerAvailable()) {
+            userReporter.showWarning("rotation vector not available");
+            return;
         }
-        else
-        {
-            System.out.println("rotation vector not available");
-        }
+
+        sensor.setDelayInterval((int) (1000 / frameRate));
+        sensingAttitude = true;
     }
+
     public void stopAttitudeSensing()
     {
-        sensor.disableRotationVector();
-        if(sensor.isStarted())
-        {
-            if(!isStillSensing()) {
-                sensor.stop();
-            }
-        }
+        sensingAttitude = false;
     }
 
     @SuppressWarnings("unused") // called by KetaiSensor via reflection
-    public void onRotationVectorEvent(float x, float y, float z, long a, int b){
-        if(attitudeSocket!=null) {
-            attitudeSocket.send("{\"m\":\"a\",\"r\":\"" + x + "\",\"p\":\"" + y + "\",\"y\":\"" + z + "\"}");
+    public void onRotationVectorEvent(float x, float y, float z, long a, int b) {
+        if (!sensingAttitude) {
+            return;
         }
-        else if(!isStillSensing())
-        {
-            System.out.println("stopping sensing from rotationVector");
-            stopAttitudeSensing();
-        }
+        eventSink.onEvent(new Event.Attitude(x, y, z));
     }
 
     //SENSING DISTANCE
-    public void startDistanceSensing(WebSocket distanceSocket)
-    {
-        this.distanceSocket = distanceSocket;
-        if(sensor.isProximityAvailable()) {
-            System.out.println("distance available");
-            sensor.enableProximity();
-            if(!sensor.isStarted())
-            {
-                sensor.start();
-            }
+    public void startDistanceSensing() {
+        if (!sensor.isProximityAvailable()) {
+            userReporter.showWarning("distance sensor not available!");
+            return;
         }
-        else
-        {
-            System.out.println("distance not available");
-        }
+
+        sensingDistance = true;
     }
     public void stopDistanceSensing()
     {
-        System.out.println("stopping distance sensing:"+ isStillSensing());
-        for (WebSocket arraySocket : arraySockets) {
-            System.out.println(arraySocket);
-        }
-        System.out.println(attitudeSocket);
-        sensor.disableProximity();
-        if(sensor.isStarted())
-        {
-            if(!isStillSensing()) {
-                sensor.stop();
-            }
-        }
+        sensingDistance = false;
     }
 
     @SuppressWarnings("unused") // called by KetaiSensor via reflection
     public void onProximityEvent(float d, long a, int b){
-        if(distanceSocket!=null) {
-            distanceSocket.send("{\"m\":\"distanceChanged\",\"proximity\":\""+d+"\"}");
+        if (!sensingDistance) {
+            return;
         }
-        else if (!isStillSensing()) {
-
-            System.out.println("stopping sensing from proximity");
-            stopDistanceSensing();
-
-        }
-    }
-
-    private boolean isStillSensing()
-    {
-        for (WebSocket arraySocket : arraySockets) {
-            if (arraySocket != null) {
-                return true;
-            }
-        }
-        return false;
+        eventSink.onEvent(new Event.Distance(d));
     }
 }

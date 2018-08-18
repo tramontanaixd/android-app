@@ -53,7 +53,8 @@ class MainPresenter(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun stop() {
-        currentServer?.stop() ?: throw IllegalStateException("stop() with no current server")
+        currentServer?.stop()
+                ?: throw IllegalStateException("stop() with no current server")
         currentServer = null
     }
 }

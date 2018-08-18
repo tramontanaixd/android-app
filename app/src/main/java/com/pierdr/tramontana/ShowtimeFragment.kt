@@ -28,7 +28,8 @@ import processing.android.PFragment
 class ShowtimeFragment : Fragment(), EventSink {
     private val TAG = javaClass.simpleName
 
-    private val sketch = Sketch(this)
+    private lateinit var sketch: Sketch
+    private lateinit var userReporter: UserReporter
     private lateinit var vibrator: Vibrator
     private lateinit var cameraManager: CameraManager
 
@@ -40,10 +41,14 @@ class ShowtimeFragment : Fragment(), EventSink {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val applicationContext = view.context.applicationContext
+
+        val applicationContext = context!!.applicationContext
         vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         cameraManager = applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
+        userReporter = ToastReporter(context!!)
+
+        sketch = Sketch(this, userReporter)
         childFragmentManager.beginTransaction()
                 .add(R.id.sketch_container, PFragment(sketch))
                 .commit()
@@ -76,9 +81,9 @@ class ShowtimeFragment : Fragment(), EventSink {
 //            is Directive.PlayVideo -> sketch.playVideo(directive.url)
             is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
-//            is Directive.RegisterDistance -> sketch.startDistanceSensing()
+            is Directive.RegisterDistance -> sketch.startDistanceSensing()
             is Directive.ReleaseDistance -> sketch.stopDistanceSensing()
-//            is Directive.RegisterAttitude -> sketch.startAttitudeSensing(directive.updateRate)
+            is Directive.RegisterAttitude -> sketch.startAttitudeSensing(directive.updateRate)
             is Directive.ReleaseAttitude -> sketch.stopAttitudeSensing()
             else -> throw UnsupportedOperationException("unsupported directive $directive")
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
@@ -93,15 +98,23 @@ class ShowtimeFragment : Fragment(), EventSink {
 
     private fun setFlashLight(value: Float) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            warnUser("Camera not available, unable to set flashlight")
+            userReporter.showWarning("Camera not available, unable to set flashlight")
             return
         } else {
             val cameraId: String = cameraManager.cameraIdList[0]
             cameraManager.setTorchMode(cameraId, value > 0)
         }
     }
+}
 
-    private fun warnUser(message: String) {
+interface UserReporter {
+    fun showWarning(message: String)
+}
+
+class ToastReporter(
+        private val context: Context
+) : UserReporter {
+    override fun showWarning(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 }
