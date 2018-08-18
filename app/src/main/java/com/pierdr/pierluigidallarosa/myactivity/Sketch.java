@@ -18,7 +18,7 @@ import ketai.sensors.KetaiSensor;
 import processing.core.PApplet;
 import processing.event.TouchEvent;
 
-class Sketch extends PApplet {
+public class Sketch extends PApplet {
     private int bgRed=255,bgGreen=255,bgBlue=255;
     private processing.core.PImage imageToDisplay;
 

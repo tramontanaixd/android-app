@@ -38,42 +38,65 @@ class PluggableBehaviorWebSocketServer(
         address: InetSocketAddress,
         drafts: List<Draft>
 ) : WebSocketServer(address, drafts) {
-    private var behavior: WebSocketServerBehavior? = null
+    private var behavior: WebSocketServerBehavior = NullBehavior()
 
     fun attachBehavior(newBehavior: WebSocketServerBehavior) {
-        if (behavior != null) throw IllegalStateException("behavior already attach: $behavior")
         behavior = newBehavior
     }
 
     fun detachBehavior() {
-        if (behavior == null) throw IllegalStateException("no behavior to detach")
-        behavior = null
+        behavior = NullBehavior()
     }
 
     override fun onStart() {
-        behavior?.onStart() ?: throw IllegalStateException("no behavior attached")
+        behavior.onStart()
     }
 
     override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
-        behavior?.onOpen(conn, handshake) ?: throw IllegalStateException("no behavior attached")
+        behavior.onOpen(conn, handshake)
     }
 
     override fun onClose(conn: WebSocket, code: Int, reason: String?, remote: Boolean) {
-        behavior?.onClose(conn, code, reason, remote)
-                ?: throw IllegalStateException("no behavior attached")
+        behavior.onClose(conn, code, reason, remote)
     }
 
     override fun onMessage(conn: WebSocket, message: String) {
-        behavior?.onMessage(conn, message) ?: throw IllegalStateException("no behavior attached")
+        behavior.onMessage(conn, message)
     }
 
     override fun onError(conn: WebSocket?, ex: Exception) {
-        behavior?.onError(conn, ex) ?: throw IllegalStateException("no behavior attached")
+        behavior.onError(conn, ex)
     }
 
     override fun stop() {
-        behavior?.onStop() ?: throw IllegalStateException("no behavior attached")
-        behavior = null
+        behavior.onStop()
+        behavior = NullBehavior()
         super.stop()
+    }
+}
+
+class NullBehavior : WebSocketServerBehavior() {
+    override fun onStart() {
+        throw IllegalStateException("onStart() with null behavior")
+    }
+
+    override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
+        throw IllegalStateException("onOpen($conn) with null behavior")
+    }
+
+    override fun onClose(conn: WebSocket, code: Int, reason: String?, remote: Boolean) {
+        throw IllegalStateException("onClose($conn, $code, $reason, $remote) with null behavior")
+    }
+
+    override fun onMessage(conn: WebSocket, message: String) {
+        throw IllegalStateException("onMessage($conn, $message) with null behavior")
+    }
+
+    override fun onError(conn: WebSocket?, ex: Exception) {
+        // gracefully handle close events by doing nothing
+    }
+
+    override fun onStop() {
+        throw IllegalStateException("onStop() with null behavior")
     }
 }

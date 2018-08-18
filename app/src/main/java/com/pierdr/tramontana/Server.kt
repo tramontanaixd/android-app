@@ -2,6 +2,7 @@ package com.pierdr.tramontana
 
 import android.util.Log
 import com.pierdr.pierluigidallarosa.myactivity.Directive
+import com.pierdr.pierluigidallarosa.myactivity.websocket.DirectiveParser
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -17,6 +18,7 @@ import kotlin.coroutines.experimental.suspendCoroutine
 class Server {
     private val TAG = javaClass.simpleName
     private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
+    private val directiveParser = DirectiveParser()
 
     /**
      * Starts the server.
@@ -92,7 +94,7 @@ class Server {
                             ?: throw IllegalStateException("no connection to close")
                     if (conn != session.connection) throw IllegalAccessException("connection $conn is close but it's not ours, ${session.connection}")
                     launch {
-                        session.directivesChannel.send(Directive.MakeVibrate)
+                        session.directivesChannel.send(directiveParser.parse(message))
                     }
                 }
 
