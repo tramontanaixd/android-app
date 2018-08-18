@@ -11,10 +11,10 @@ private const val SHOWTIME_TAG = "showtime"
 class TramontanaActivity : AppCompatActivity(), MainView {
     private val TAG = javaClass.simpleName
 
-    private val serverObserver = MainPresenter(this)
+    private val presenter = MainPresenter(this)
 
     init {
-        lifecycle.addObserver(serverObserver)
+        lifecycle.addObserver(presenter)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +34,10 @@ class TramontanaActivity : AppCompatActivity(), MainView {
     }
 
     override fun showShowtimeFragment() {
+        val showtimeFragment = ShowtimeFragment()
+        showtimeFragment.eventSink = presenter
         supportFragmentManager.beginTransaction()
-                .replace(R.id.container, ShowtimeFragment(), SHOWTIME_TAG)
+                .replace(R.id.container, showtimeFragment, SHOWTIME_TAG)
                 .commit()
     }
 

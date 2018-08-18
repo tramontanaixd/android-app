@@ -1,10 +1,15 @@
 package com.pierdr.pierluigidallarosa.myactivity.websocket
 
 import com.pierdr.pierluigidallarosa.myactivity.Directive
+import com.pierdr.tramontana.Event
 import processing.core.PApplet
 import processing.data.JSONObject
 
-class DirectiveParser {
+/**
+ * Implements the Tramontana JSON protocol. It has methods to transform JSON messages in [Directive] and
+ * [Event] objects into JSON messages.
+ */
+class Protocol {
     fun parse(message: String): Directive {
         println("received a message")
         println(message)
@@ -12,7 +17,6 @@ class DirectiveParser {
         val json = JSONObject.parse(message)
 
         val directive = json.getString("m")
-//        cm.addNewMessage("received msg: $directive")
 
         return when (directive) {
             "makeVibrate" -> Directive.MakeVibrate
@@ -58,5 +62,22 @@ class DirectiveParser {
         val multi = json.hasKey("multi")
         val drag = json.get("m") == "registerTouchDrag"
         return Directive.RegisterTouch(multi, drag)
+    }
+
+    fun emit(event: Event): String = when (event) {
+        is Event.TouchDown -> {
+            JSONObject()
+                    .setString("m", "touchedDown")
+                    .setString("x", event.x.toString())
+                    .setString("y", event.y.toString())
+                    .toString()
+        }
+        is Event.Touched -> {
+            JSONObject()
+                    .setString("m", "touched")
+                    .setString("x", event.x.toString())
+                    .setString("y", event.y.toString())
+                    .toString()
+        }
     }
 }

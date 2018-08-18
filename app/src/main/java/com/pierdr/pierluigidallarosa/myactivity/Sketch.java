@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
+import com.pierdr.tramontana.Event;
+import com.pierdr.tramontana.EventSink;
+
 import org.java_websocket.WebSocket;
 
 import java.io.File;
@@ -36,7 +39,6 @@ public class Sketch extends PApplet {
 
     //SOCKETS
     private WebSocket attitudeSocket;
-    private WebSocket touchSocket;
     private WebSocket distanceSocket;
 
     private final WebSocket[] arraySockets = new WebSocket[2];
@@ -51,6 +53,12 @@ public class Sketch extends PApplet {
 
     private int touchState = TOUCH_INACTIVE;
     private TouchEvent.Pointer lastEvents[];
+
+    private final EventSink eventSink;
+
+    public Sketch(EventSink eventSink) {
+        this.eventSink = eventSink;
+    }
 
     public void settings() {
         fullScreen();
@@ -122,12 +130,9 @@ public class Sketch extends PApplet {
         }
         return false;
     }
-    public void startTouchListening(WebSocket touchSocket, boolean multi, boolean drag)
+
+    public void startTouchListening(boolean multi, boolean drag)
     {
-
-        this.touchSocket = touchSocket;
-        arraySockets[TOUCH] = touchSocket;
-
         if(multi && drag)
         {
             touchState = TOUCH_DRAG_LISTENING;
@@ -152,7 +157,7 @@ public class Sketch extends PApplet {
                case TOUCH_DRAG_LISTENING:
 
                    if(touches.length>0) {
-                       touchSocket.send("{\"m\":\"touchedDown\",\"x\":\"" + touches[0].x + "\",\"y\":\"" + touches[0].y + "\"}");
+                       eventSink.onEvent(new Event.TouchDown((int) touches[0].x, (int) touches[0].y));
                    }
 
                break;
@@ -173,8 +178,7 @@ public class Sketch extends PApplet {
             case TOUCH_DRAG_LISTENING:
 
                 if(lastEvents.length>0) {
-
-                    touchSocket.send("{\"m\":\"touched\",\"x\":\"" + lastEvents[0].x + "\",\"y\":\"" + lastEvents[0].y + "\"}");
+                    eventSink.onEvent(new Event.Touched((int) lastEvents[0].x, (int) lastEvents[0].y));
                 }
 
                 break;

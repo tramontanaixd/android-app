@@ -108,22 +108,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void startTouchListening(final boolean multi, final boolean drag) {
-        runWhenSketchIsReady(new Runnable() {
-            @Override
-            public void run() {
-                // FIXME let the sketch obtain the current websocket
-                sketch.startTouchListening(null, multi, drag);
-            }
-        });
-    }
-
-    public void stopTouchListening() {
-        if (isStarted) {
-            sketch.stopTouchListening();
-        }
-    }
-
     public void startDistanceSensing() {
         runWhenSketchIsReady(new Runnable() {
             @Override

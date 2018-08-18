@@ -8,9 +8,11 @@ import kotlinx.coroutines.experimental.launch
 
 class MainPresenter(
         private val view: MainView
-) : LifecycleObserver {
+) : LifecycleObserver, EventSink {
+
     private val TAG = javaClass.simpleName
     private var currentServer: Server? = null
+    private var currentSession: ClientSession? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun start() = launch {
@@ -28,6 +30,7 @@ class MainPresenter(
 
     private fun handleClientSession(session: ClientSession) {
         Log.d(TAG, "got client session $session")
+        currentSession = session
         view.showShowtimeFragment()
 
         launch {
@@ -36,11 +39,17 @@ class MainPresenter(
                 view.runDirective(directive)
             }
             Log.d(TAG, "session closed, no more directives")
+            currentSession = null
             view.showReadyFragment()
         }
 
     }
 
+    override fun onEvent(event: Event) {
+        Log.d(TAG, "got event $event")
+        currentSession?.sendEvent(event)
+                ?: throw IllegalStateException("got event with no session: $event")
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun stop() {

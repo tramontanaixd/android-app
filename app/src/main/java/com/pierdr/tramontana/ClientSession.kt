@@ -11,7 +11,7 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
  * calling [isClosed].
  */
 interface ClientSession {
-    fun sendEvent()
+    fun sendEvent(event: Event)
     fun produceDirectives(): ReceiveChannel<Directive>
     fun close()
 }

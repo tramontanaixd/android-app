@@ -2,7 +2,7 @@ package com.pierdr.tramontana
 
 import android.util.Log
 import com.pierdr.pierluigidallarosa.myactivity.Directive
-import com.pierdr.pierluigidallarosa.myactivity.websocket.DirectiveParser
+import com.pierdr.pierluigidallarosa.myactivity.websocket.Protocol
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -18,7 +18,7 @@ import kotlin.coroutines.experimental.suspendCoroutine
 class Server {
     private val TAG = javaClass.simpleName
     private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
-    private val directiveParser = DirectiveParser()
+    private val protocol = Protocol()
 
     /**
      * Starts the server.
@@ -94,7 +94,7 @@ class Server {
                             ?: throw IllegalStateException("no connection to close")
                     if (conn != session.connection) throw IllegalAccessException("connection $conn is close but it's not ours, ${session.connection}")
                     launch {
-                        session.directivesChannel.send(directiveParser.parse(message))
+                        session.directivesChannel.send(protocol.parse(message))
                     }
                 }
 
@@ -110,10 +110,15 @@ class Server {
 class WebSocketClientSession(
         val connection: WebSocket
 ) : ClientSession {
+    private val TAG = javaClass.simpleName
+    private val protocol = Protocol()
+
     val directivesChannel = Channel<Directive>()
 
-    override fun sendEvent() {
-        connection.send("x")
+    override fun sendEvent(event: Event) {
+        val message = protocol.emit(event)
+        Log.d(TAG, "sending message $message")
+        connection.send(message)
     }
 
     override fun produceDirectives(): ReceiveChannel<Directive> = directivesChannel

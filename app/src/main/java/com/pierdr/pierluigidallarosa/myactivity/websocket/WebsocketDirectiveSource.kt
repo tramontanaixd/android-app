@@ -16,7 +16,7 @@ internal constructor(
 
     override fun produceDirectives(): ReceiveChannel<Directive> {
         val channel = Channel<Directive>()
-        val parser = DirectiveParser()
+        val parser = Protocol()
         val listener = object : WebsocketManager.WebsocketManagerListener {
             override fun onNewMessage(message: String, socket: WebSocket) {
                 launch {

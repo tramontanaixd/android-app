@@ -22,7 +22,7 @@ class Controller(
             val websocketManager = initWebsocketManager()
 
             val directiveSource = WebsocketDirectiveSource(websocketManager, cm)
-            val executor: DirectiveExecutor = AndroidDirectiveExecutor(mainActivity.applicationContext, mainActivity)
+            val executor: DirectiveExecutor = AndroidDirectiveExecutor(mainActivity)
 
             launch {
                 for (directive in directiveSource.produceDirectives()) {

@@ -21,15 +21,18 @@ import processing.android.PFragment
 /**
  * Fragment to show when there's an active connection.
  *
- * Shows the Processing sketch by default; video are handled outside
- * the sketch.
+ * Shows the Processing sketch by default; video are handled outside the sketch.
+ *
+ * A user of this fragment *must* call set the [eventSink] for events coming from the sketch.
  */
-class ShowtimeFragment : Fragment() {
+class ShowtimeFragment : Fragment(), EventSink {
     private val TAG = javaClass.simpleName
 
-    private val sketch = Sketch()
+    private val sketch = Sketch(this)
     private lateinit var vibrator: Vibrator
     private lateinit var cameraManager: CameraManager
+
+    lateinit var eventSink: EventSink
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_showtime, container, false)
@@ -46,6 +49,9 @@ class ShowtimeFragment : Fragment() {
                 .commit()
     }
 
+    override fun onEvent(event: Event) {
+        eventSink.onEvent(event)
+    }
 
     fun runDirective(directive: Directive) {
         Log.d(TAG, "would run directive $directive")
@@ -68,7 +74,7 @@ class ShowtimeFragment : Fragment() {
             is Directive.SetLed -> setFlashLight(directive.intensity)
             is Directive.ShowImage -> sketch.showImage(directive.url)
 //            is Directive.PlayVideo -> sketch.playVideo(directive.url)
-//            is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
+            is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
 //            is Directive.RegisterDistance -> sketch.startDistanceSensing()
             is Directive.ReleaseDistance -> sketch.stopDistanceSensing()
