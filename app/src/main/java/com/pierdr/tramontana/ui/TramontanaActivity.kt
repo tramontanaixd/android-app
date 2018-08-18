@@ -1,9 +1,9 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.ui
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.pierdr.pierluigidallarosa.myactivity.Directive
 import com.pierdr.pierluigidallarosa.myactivity.R
+import com.pierdr.tramontana.model.Directive
 
 private const val READY_TAG = "ready"
 private const val SHOWTIME_TAG = "showtime"

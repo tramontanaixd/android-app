@@ -1,8 +1,10 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.websocket
 
 import android.util.Log
-import com.pierdr.pierluigidallarosa.myactivity.Directive
-import com.pierdr.pierluigidallarosa.myactivity.websocket.Protocol
+import com.pierdr.tramontana.model.ClientSession
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.Server
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -15,7 +17,7 @@ import java.lang.Exception
 import java.net.InetSocketAddress
 import kotlin.coroutines.experimental.suspendCoroutine
 
-class Server {
+class WebsocketServer : Server {
     private val TAG = javaClass.simpleName
     private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
     private val protocol = Protocol()
@@ -25,7 +27,7 @@ class Server {
      *
      * This method will suspend until the server is successfully started, or an error occurs.
      */
-    suspend fun start() = suspendCoroutine<Unit> { continuation ->
+    override suspend fun start() = suspendCoroutine<Unit> { continuation ->
         WebSocketImpl.DEBUG = false
         websocketServer.connectionLostTimeout = 0
         websocketServer.start()
@@ -53,7 +55,7 @@ class Server {
      * also stop all the connections, therefore, any receive channels returned by [produceClientSessions]
      * will stop too.
      */
-    fun stop() {
+    override fun stop() {
         Log.d(TAG, "stopping server")
         websocketServer.stop()
     }
@@ -63,7 +65,7 @@ class Server {
      * connects to us. Only one connection at a time is supported. The channel stops when the server
      * is stopped.
      */
-    fun produceClientSessions() = produce<ClientSession> {
+    override fun produceClientSessions() = produce<ClientSession> {
         suspendCoroutine<Unit> { sessionsContinuation ->
             websocketServer.attachBehavior(object : WebSocketServerBehavior() {
                 private var currentSession: WebSocketClientSession? = null

@@ -1,9 +1,14 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.ui
 
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
+import com.pierdr.tramontana.model.ClientSession
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.EventSink
+import com.pierdr.tramontana.model.Server
+import com.pierdr.tramontana.websocket.WebsocketServer
 import kotlinx.coroutines.experimental.launch
 
 class MainPresenter(
@@ -18,7 +23,7 @@ class MainPresenter(
     fun start() = launch {
         view.showReadyFragment()
 
-        val server = Server()
+        val server: Server = WebsocketServer()
         currentServer = server
         server.start()
         Log.d(TAG, "waiting for client sessions")

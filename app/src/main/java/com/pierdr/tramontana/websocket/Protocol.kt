@@ -1,7 +1,7 @@
-package com.pierdr.pierluigidallarosa.myactivity.websocket
+package com.pierdr.tramontana.websocket
 
-import com.pierdr.pierluigidallarosa.myactivity.Directive
-import com.pierdr.tramontana.Event
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Event
 import processing.core.PApplet
 import processing.data.JSONObject
 

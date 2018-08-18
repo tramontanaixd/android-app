@@ -1,4 +1,4 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.ui
 
 import android.content.Context
 import android.hardware.camera2.CameraManager
@@ -11,9 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.pierdr.pierluigidallarosa.myactivity.Directive
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.pierluigidallarosa.myactivity.Sketch
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.EventSink
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import processing.android.PFragment

@@ -1,4 +1,4 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.model
 
 sealed class Event {
     data class TouchDown(
@@ -20,8 +20,4 @@ sealed class Event {
     data class Distance(
             val distance: Float
     ) : Event()
-}
-
-interface EventSink {
-    fun onEvent(event: Event)
 }

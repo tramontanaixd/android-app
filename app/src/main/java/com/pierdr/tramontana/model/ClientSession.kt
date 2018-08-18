@@ -1,6 +1,5 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.model
 
-import com.pierdr.pierluigidallarosa.myactivity.Directive
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 
 /**

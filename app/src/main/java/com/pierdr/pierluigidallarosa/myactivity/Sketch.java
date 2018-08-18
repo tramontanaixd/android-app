@@ -4,9 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
-import com.pierdr.tramontana.Event;
-import com.pierdr.tramontana.EventSink;
-import com.pierdr.tramontana.UserReporter;
+import com.pierdr.tramontana.model.Event;
+import com.pierdr.tramontana.model.EventSink;
+import com.pierdr.tramontana.ui.UserReporter;
 
 import java.io.File;
 import java.io.FileOutputStream;

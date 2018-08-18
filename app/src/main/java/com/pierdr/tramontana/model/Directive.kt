@@ -1,4 +1,4 @@
-package com.pierdr.pierluigidallarosa.myactivity
+package com.pierdr.tramontana.model
 
 /**
  * A directive is a message sent by the Tramontana host to run a given action,
@@ -69,14 +69,14 @@ sealed class Directive {
     //RETURNS A MESSAGE LIKE
     // "{\"m\":\"battery\",\"v\":\"0.05\"}"
     // TODO directive playAudio
-    // TODO directive registerAudioJack
+    // TODO directive registerOrientation
     // TODO directive releaseOrientation
     // TODO directive registerMagnetometer
+    // TODO directive releaseMagnetometer
+    // TODO directive registerPowerSource
     // TODO directive releasePowerSource
     // TODO directive registerAudioJack
-    // TODO directive releaseOrientation
-    // TODO directive registerMagnetometer
-    // TODO directive releasePowerSource
+    // TODO directive releaseAudioJack
 
 }
 

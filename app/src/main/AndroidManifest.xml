@@ -26,7 +26,7 @@
             ></activity>
 
         <activity
-            android:name="com.pierdr.tramontana.TramontanaActivity"
+            android:name="com.pierdr.tramontana.ui.TramontanaActivity"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>

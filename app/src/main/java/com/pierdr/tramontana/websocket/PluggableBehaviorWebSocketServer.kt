@@ -1,4 +1,4 @@
-package com.pierdr.tramontana
+package com.pierdr.tramontana.websocket
 
 import org.java_websocket.WebSocket
 import org.java_websocket.drafts.Draft

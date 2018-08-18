@@ -1,5 +1,6 @@
 package com.pierdr.pierluigidallarosa.myactivity
 
+import com.pierdr.tramontana.model.Directive
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 

@@ -8,7 +8,6 @@ import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -26,10 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView ipAddressView;
     private VideoView videoView;
 
-    private boolean isStarted=false;
     private FrameLayout frame;
-
-    private ConsoleManager cm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.starting_view);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        cm = new ConsoleManager((TextView)findViewById(R.id.consoleLog));
-
-        // TODO stop connections and server while the activity is paused
-        (new Controller(this)).start();
 
         //CHECK IP ADDRESS
         ipAddressView = findViewById(R.id.ipAddressView);
@@ -53,10 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
         System.out.print("tramontana started1");
 
-    }
-
-    ConsoleManager getConsoleManager() {
-        return cm;
     }
 
     private void checkIpAddress()
@@ -79,18 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    public void onButtonPressed(View v)
-    {
-        Toast toastTmp = Toast.makeText(getApplicationContext(),"Restart Tramontana to see the info panel.",Toast.LENGTH_SHORT);
-        toastTmp.show();
-        startProcessingSketch();
-    }
-    private void startProcessingSketch()
-    {
-        if(!isStarted) {
-        }
 
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
@@ -151,26 +127,6 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("playing video: "+localVideoSrc);
 
     }
-    public void setBrightness(float brightness){
-
-        WindowManager.LayoutParams lp = getWindow().getAttributes();
-        lp.screenBrightness = brightness;
-        getWindow().setAttributes(lp);
-    }
-
-    public void onSetColor(int red, int green, int blue, int alpha)
-    {
-        System.out.println("starting sketch");
-        startProcessingSketch();
-
-        sketch.setColor(red,green,blue);
-
-        setBrightness(alpha/(float)255);
-    }
-
-
-
-
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
