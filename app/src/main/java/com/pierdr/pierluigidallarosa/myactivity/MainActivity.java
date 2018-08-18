@@ -2,10 +2,7 @@ package com.pierdr.pierluigidallarosa.myactivity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -24,11 +21,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ketai.net.KetaiNet;
-import processing.android.CompatUtils;
-import processing.android.PFragment;
 
 public class MainActivity extends AppCompatActivity {
-    // TODO run the sketch only while a WebSocket connection is active, and stop it when it disconnects
     private Sketch sketch;
     private TextView ipAddressView;
     private VideoView videoView;
@@ -36,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isStarted=false;
     private FrameLayout frame;
 
-    private CameraManager mCameraManager;
     private ConsoleManager cm;
 
     @Override
@@ -96,19 +89,6 @@ public class MainActivity extends AppCompatActivity {
     private void startProcessingSketch()
     {
         if(!isStarted) {
-            //START PROCESSING
-            sketch = new Sketch();
-
-            //SETUP VIEW FULLSCREEN
-            frame = new FrameLayout(this);
-            frame.setKeepScreenOn(true);
-            frame.setId(CompatUtils.getUniqueViewId());
-            setContentView(frame, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT));
-
-            PFragment fragment = new PFragment(sketch);
-            fragment.setView(frame, this);
-            isStarted = true;
         }
 
     }
@@ -187,25 +167,6 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler();
         // TODO wait for some signal from the sketch instead of waiting
         handler.postDelayed(task, 500);
-    }
-
-    public void setFlashLight(float value){
-
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String mCameraId;
-                    try {
-                        mCameraId = mCameraManager.getCameraIdList()[0];
-                        mCameraManager.setTorchMode(mCameraId, value > 0);
-                        System.out.println("setting torchMode");
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("flash not available");
-            }
-
     }
 
     public void showImage(String filename){

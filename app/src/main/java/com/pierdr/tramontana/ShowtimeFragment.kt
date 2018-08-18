@@ -1,6 +1,8 @@
 package com.pierdr.tramontana
 
 import android.content.Context
+import android.hardware.camera2.CameraManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
 import android.support.v4.app.Fragment
@@ -8,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.pierdr.pierluigidallarosa.myactivity.Directive
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.pierluigidallarosa.myactivity.Sketch
@@ -26,6 +29,7 @@ class ShowtimeFragment : Fragment() {
 
     private val sketch = Sketch()
     private lateinit var vibrator: Vibrator
+    private lateinit var cameraManager: CameraManager
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_showtime, container, false)
@@ -33,7 +37,9 @@ class ShowtimeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        vibrator = view.context.applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        val applicationContext = view.context.applicationContext
+        vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        cameraManager = applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
         childFragmentManager.beginTransaction()
                 .add(R.id.sketch_container, PFragment(sketch))
@@ -59,7 +65,7 @@ class ShowtimeFragment : Fragment() {
                         directive.blue)
                 setBrightness(directive.alpha / 255.0f)
             }
-//            is Directive.SetLed -> sketch.setFlashLight(directive.intensity)
+            is Directive.SetLed -> setFlashLight(directive.intensity)
             is Directive.ShowImage -> sketch.showImage(directive.url)
 //            is Directive.PlayVideo -> sketch.playVideo(directive.url)
 //            is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
@@ -79,4 +85,17 @@ class ShowtimeFragment : Fragment() {
         window.attributes = lp
     }
 
+    private fun setFlashLight(value: Float) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            warnUser("Camera not available, unable to set flashlight")
+            return
+        } else {
+            val cameraId: String = cameraManager.cameraIdList[0]
+            cameraManager.setTorchMode(cameraId, value > 0)
+        }
+    }
+
+    private fun warnUser(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
 }
