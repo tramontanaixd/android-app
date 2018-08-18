@@ -1,20 +1,21 @@
 package com.pierdr.tramontana
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import com.pierdr.pierluigidallarosa.myactivity.Directive
 import com.pierdr.pierluigidallarosa.myactivity.R
-import kotlinx.coroutines.experimental.launch
 
-class TramontanaActivity : AppCompatActivity(), SessionConsumer {
+private const val READY_TAG = "ready"
+private const val SHOWTIME_TAG = "showtime"
+
+class TramontanaActivity : AppCompatActivity(), MainView {
     private val TAG = javaClass.simpleName
 
-    private val serverObserver = ServerLifecycleObserver(this)
+    private val serverObserver = MainPresenter(this)
 
-    private var readyFragment: ReadyFragment? = null
+    init {
+        lifecycle.addObserver(serverObserver)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,71 +27,30 @@ class TramontanaActivity : AppCompatActivity(), SessionConsumer {
         showReadyFragment()
     }
 
-    private fun showReadyFragment() {
-        readyFragment = ReadyFragment()
+    override fun showReadyFragment() {
         supportFragmentManager.beginTransaction()
-                .replace(R.id.container, readyFragment)
+                .replace(R.id.container, ReadyFragment(), READY_TAG)
                 .commit()
     }
 
-    override fun onStartClientSession(session: ClientSession) {
-        Log.d(TAG, "onStartClientSession $session")
-        showShowtimeFragment()
-
-        launch {
-            Log.d(TAG, "waiting for directives")
-            for (directive in session.produceDirectives()) {
-
-            }
-            Log.d(TAG, "session closed, no more directives")
-            showReadyFragment()
-        }
-    }
-
-    private fun showShowtimeFragment() {
+    override fun showShowtimeFragment() {
         supportFragmentManager.beginTransaction()
-                .remove(readyFragment)
+                .replace(R.id.container, ShowtimeFragment(), SHOWTIME_TAG)
                 .commit()
     }
 
-    init {
-        lifecycle.addObserver(serverObserver)
+    override fun runDirective(directive: Directive) {
+        val fragmentWithShowtimeTag = supportFragmentManager?.findFragmentByTag(SHOWTIME_TAG)
+                ?: throw IllegalStateException("got directive $directive but no showtime fragment present")
+
+        val showtimeFragment = fragmentWithShowtimeTag as ShowtimeFragment
+        showtimeFragment.runDirective(directive)
     }
 }
 
-interface SessionConsumer {
-    /**
-     * Signals that a new client session has started.
-     *
-     * Listen to [ClientSession.produceDirectives]: when this channel closes, the session is ended.
-     */
-    fun onStartClientSession(session: ClientSession)
-}
-
-class ServerLifecycleObserver(
-        private val sessionConsumer: SessionConsumer
-) : LifecycleObserver {
-    private val TAG = javaClass.simpleName
-    private var currentServer: Server? = null
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun start() = launch {
-        val server = Server()
-        currentServer = server
-        server.start()
-        Log.d(TAG, "waiting for client sessions")
-        for (clientSession in server.produceClientSessions()) {
-            Log.d(TAG, "got client session $clientSession")
-            sessionConsumer.onStartClientSession(clientSession)
-        }
-        Log.d(TAG, "no more client sessions")
-    }
-
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun stop() {
-        currentServer?.stop() ?: throw IllegalStateException("stop() with no current server")
-        currentServer = null
-    }
+interface MainView {
+    fun showReadyFragment()
+    fun showShowtimeFragment()
+    fun runDirective(directive: Directive)
 }
 

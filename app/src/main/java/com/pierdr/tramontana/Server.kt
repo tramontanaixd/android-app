@@ -45,8 +45,11 @@ class Server {
     }
 
     /**
-     * Stops the server. As per [org.java_websocket.server.WebSocketServer] documentation, this will
-     * also stop all the connections.
+     * Stops the server.
+     *
+     * As per [org.java_websocket.server.WebSocketServer] documentation, this will
+     * also stop all the connections, therefore, any receive channels returned by [produceClientSessions]
+     * will stop too.
      */
     fun stop() {
         Log.d(TAG, "stopping server")
