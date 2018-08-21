@@ -25,6 +25,8 @@ android {
 }
 
 dependencies {
+    def lifecycle_version = "2.0.0-rc01"
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:27.1.1'
@@ -37,8 +39,14 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.21"
 
+    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
+    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation "androidx.arch.core:core-testing:$lifecycle_version"
+
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
@@ -50,10 +58,5 @@ kotlin {
 }
 
 dependencies {
-    def lifecycle_version = "2.0.0-rc01"
 
-    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
-
-    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
-    testImplementation "androidx.arch.core:core-testing:$lifecycle_version"
 }

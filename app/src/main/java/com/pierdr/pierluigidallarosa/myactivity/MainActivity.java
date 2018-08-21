@@ -83,9 +83,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showImage(String filename){
-        sketch.showImage(filename);
-    }
     public void playVideo(String filename){
         if(sketch.isResourceLocal(filename))
         {

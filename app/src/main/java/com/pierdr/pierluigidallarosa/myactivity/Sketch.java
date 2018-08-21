@@ -1,7 +1,5 @@
 package com.pierdr.pierluigidallarosa.myactivity;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
 import com.pierdr.tramontana.model.Event;
@@ -22,7 +20,6 @@ import processing.event.TouchEvent;
 
 public class Sketch extends PApplet {
     private int bgRed=255,bgGreen=255,bgBlue=255;
-    private processing.core.PImage imageToDisplay;
 
     /***
      STATES
@@ -67,29 +64,7 @@ public class Sketch extends PApplet {
     }
 
     public void draw() {
-        switch(state)
-        {
-            case SHOW_BG:
-            {
-                background(bgRed,bgGreen,bgBlue);
-                break;
-            }
-            case SHOW_IMAGE:
-            {
-                background(bgRed,bgGreen,bgBlue);
-                if(imageToDisplay!=null) {
-                    image(imageToDisplay, 0, 0,width,height);
-                }
-                break;
-            }
-            case PLAY_VIDEO:
-            {
-                background(bgRed,bgGreen,bgBlue);
-
-                break;
-            }
-        }
-
+        background(bgRed, bgGreen, bgBlue);
     }
     public void setColor(int red, int green, int blue)
     {
@@ -99,20 +74,6 @@ public class Sketch extends PApplet {
        changeState(SHOW_BG);
     }
 
-    public void showImage(String imageName) {
-        if (isResourceLocal(imageName)) {
-            //LOAD LOCAL FILE
-            while (imageName.contains("/")) {
-                imageName = imageName.replace("/", "");
-            }
-            imageToDisplay = new processing.core.PImage(BitmapFactory.decodeFile(getContext().getFilesDir() + "/" + imageName));
-        } else {
-            //DOWNLOAD FROM THE INTERNET
-            getBitmapFromURL(imageName);
-        }
-        changeState(SHOW_IMAGE);
-
-    }
     boolean isResourceLocal(String name)
     {
         while(name.contains("/"))
@@ -185,68 +146,6 @@ public class Sketch extends PApplet {
         }
     }
 
-    private void saveBitmapToFile(String filename, Bitmap bitmap)
-    {
-        FileOutputStream out = null;
-        try {
-            while(filename.contains("/"))
-            {
-                filename = filename.replace("/","");
-            }
-            System.out.println("saving image at:\n"+filename);
-            out = new FileOutputStream(getContext().getFilesDir()+"/"+filename);
-
-            bitmap.compress((filename.contains(".png"))?Bitmap.CompressFormat.PNG:Bitmap.CompressFormat.JPEG, 80, out); // bmp is your Bitmap instance
-            // PNG is a lossless format, the compression factor (100) is ignored
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void getBitmapFromURL(String src) {
-
-        class RetrieveImage extends AsyncTask<String, Void, Void> {
-
-            private Bitmap bitmapToLoad;
-            private String src;
-            protected Void doInBackground(String... urls) {
-                try {
-
-                    URL url = new URL(urls[0]);
-                    src = urls[0];
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream input = connection.getInputStream();
-                    bitmapToLoad = BitmapFactory.decodeStream(input);
-                    // TODO replace this with Picasso
-                    imageToDisplay = new processing.core.PImage(bitmapToLoad);
-
-
-
-                } catch (IOException e) {
-                    // Log exception
-                    System.out.println("error retrieving image:\n "+e);
-                    return null;
-                }
-                return null;
-            }
-            protected void onPostExecute(Void feed) {
-
-                saveBitmapToFile(src,bitmapToLoad);
-            }
-        }
-        new RetrieveImage().execute(src);
-
-    }
     void getMediaFromURL(final String mediaSrc)
     {
         class RetrieveMedia extends AsyncTask<String, Void, Void> {
