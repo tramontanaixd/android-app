@@ -1,15 +1,12 @@
 package com.pierdr.pierluigidallarosa.myactivity;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -74,20 +71,6 @@ public class MainActivity extends AppCompatActivity {
     public void onNewIntent(Intent intent) {
         if (sketch != null) {
             sketch.onNewIntent(intent);
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-// Checks the orientation of the screen for landscape and portrait
-        Log.d("myTag", (newConfig.orientation+""));
-
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
         }
     }
 }
