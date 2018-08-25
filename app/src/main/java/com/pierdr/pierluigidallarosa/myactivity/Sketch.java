@@ -1,18 +1,8 @@
 package com.pierdr.pierluigidallarosa.myactivity;
 
-import android.os.AsyncTask;
-
 import com.pierdr.tramontana.model.Event;
 import com.pierdr.tramontana.model.EventSink;
 import com.pierdr.tramontana.ui.UserReporter;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import ketai.sensors.KetaiSensor;
 import processing.core.PApplet;
@@ -20,15 +10,6 @@ import processing.event.TouchEvent;
 
 public class Sketch extends PApplet {
     private int bgRed=255,bgGreen=255,bgBlue=255;
-
-    /***
-     STATES
-     ***/
-    private int state;
-
-    private static final int SHOW_IMAGE            = 1;
-    private static final int SHOW_BG               = 2;
-    static final int PLAY_VIDEO            = 3;
 
     //SENSORS
     private KetaiSensor sensor;
@@ -71,23 +52,6 @@ public class Sketch extends PApplet {
        bgRed    = red;
        bgGreen  = green;
        bgBlue   = blue;
-       changeState(SHOW_BG);
-    }
-
-    boolean isResourceLocal(String name)
-    {
-        while(name.contains("/"))
-        {
-            name = name.replace("/","");
-        }
-        File file = new File(getContext().getFilesDir()+"/"+name);
-        System.out.println("Looking for resource:"+getContext().getFilesDir()+"/"+name);
-        if(file.exists())
-        {
-            System.out.println("Local resource!");
-            return true;
-        }
-        return false;
     }
 
     public void startTouchListening(boolean multi, boolean drag)
@@ -146,97 +110,6 @@ public class Sketch extends PApplet {
         }
     }
 
-    void getMediaFromURL(final String mediaSrc)
-    {
-        class RetrieveMedia extends AsyncTask<String, Void, Void> {
-
-            private InputStream input;
-            protected Void doInBackground(String... urls) {
-                try {
-
-                    URL url = new URL(urls[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    input = connection.getInputStream();
-
-                    System.out.println("media loaded \n"+urls[0]);
-                } catch (IOException e) {
-                    // Log exception
-                    System.out.println("error retrieving media:\n "+e);
-                }
-                return null;
-            }
-
-            protected void onPostExecute(Void feed) {
-                //SAVE MEDIA TO FILE
-                OutputStream out = null;
-                String localMediaSrc = mediaSrc;
-                System.out.println("starting to save media to disk");
-                try {
-
-                    while(localMediaSrc.contains("/"))
-                    {
-                        localMediaSrc = localMediaSrc.replace("/","");
-                    }
-                    System.out.println("saving media at:\n"+localMediaSrc);
-                    out = new FileOutputStream(getContext().getFilesDir()+"/"+localMediaSrc);
-
-                    byte[] buf = new byte[1024];
-                    int len;
-                    while((len=input.read(buf))>0){
-                        out.write(buf,0,len);
-                    }
-                }
-                catch (Exception e) {
-                    System.out.println("error in saving media");
-                    e.printStackTrace();
-                }
-                finally {
-                    // Ensure that the InputStreams are closed even if there's an exception.
-                    try {
-                        if ( out != null ) {
-                            out.close();
-                        }
-                        // If you want to close the "in" InputStream yourself then remove this
-                        // from here but ensure that you close it yourself eventually.
-                        input.close();
-
-                        ((MainActivity)getActivity()).startPlayingVideo(localMediaSrc);
-                    }
-                    catch ( IOException e ) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        new RetrieveMedia().execute(mediaSrc);
-
-    }
-    void changeState(int newState)
-    {
-        if(newState!=state)
-        {
-
-            switch(state)
-            {
-
-                case SHOW_BG:
-                {
-
-                    break;
-                }
-                case SHOW_IMAGE:
-                {
-
-                    break;
-                }
-            }
-            state = newState;
-        }
-
-
-    }
     //SENSORS
     public void startAttitudeSensing(Float frameRate) {
         if (!sensor.isAccelerometerAvailable()) {

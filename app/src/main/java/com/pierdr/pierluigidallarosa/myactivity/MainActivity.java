@@ -2,18 +2,14 @@ package com.pierdr.pierluigidallarosa.myactivity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -23,9 +19,6 @@ import ketai.net.KetaiNet;
 public class MainActivity extends AppCompatActivity {
     private Sketch sketch;
     private TextView ipAddressView;
-    private VideoView videoView;
-
-    private FrameLayout frame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // TODO move these Android callbacks to e.g. ShowtimeFragment
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
@@ -81,48 +75,6 @@ public class MainActivity extends AppCompatActivity {
         if (sketch != null) {
             sketch.onNewIntent(intent);
         }
-    }
-
-    public void playVideo(String filename){
-        if(sketch.isResourceLocal(filename))
-        {
-            //LOAD LOCAL FILE
-            while(filename.contains("/"))
-            {
-                filename = filename.replace("/","");
-            }
-
-            startPlayingVideo(filename);
-        }
-        else
-        {
-            sketch.getMediaFromURL(filename);
-        }
-        sketch.changeState(Sketch.PLAY_VIDEO);
-    }
-    public void startPlayingVideo(String localVideoSrc)
-    {
-        try {
-            videoView = new VideoView(this);
-            frame.addView(videoView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            videoView.setVideoPath(getFilesDir() + "/" + localVideoSrc);
-            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setLooping(true);
-                    videoView.start();
-                }
-            });
-            // TODO try videoView.setClickable(false) to let the underlying sketch receive touch events.
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace(System.out);
-        }
-
-
-        System.out.println("playing video: "+localVideoSrc);
-
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.pierdr.tramontana.ui
 
 import android.content.Context
 import android.hardware.camera2.CameraManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
@@ -97,7 +98,7 @@ class ShowtimeFragment : Fragment(), EventSink {
             }
             is Directive.SetLed -> setFlashLight(directive.intensity)
             is Directive.ShowImage -> onShowImage(directive)
-//            is Directive.PlayVideo -> sketch.playVideo(directive.url)
+            is Directive.PlayVideo -> onPlayVideo(directive)
             is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
             is Directive.RegisterDistance -> sketch.startDistanceSensing()
@@ -113,6 +114,18 @@ class ShowtimeFragment : Fragment(), EventSink {
         Picasso.get()
                 .load(directive.url)
                 .into(image)
+    }
+
+    private fun onPlayVideo(directive: Directive.PlayVideo) {
+        video.setZOrderOnTop(true)
+        contentToShow = ContentToShow.Video
+        Log.d(TAG, "loading video ${directive.url}")
+        video.setOnPreparedListener {
+            Log.d(TAG, "starting video ${directive.url}")
+            video.start()
+        }
+        // TODO video cache
+        video.setVideoURI(Uri.parse(directive.url))
     }
 
     private fun setBrightness(brightness: Float) {
