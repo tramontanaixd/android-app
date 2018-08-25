@@ -29,7 +29,7 @@ import java.io.File
  *
  * Shows the Processing sketch by default; images and videos are handled outside the sketch.
  *
- * A user of this fragment *must* call set the [eventSink] for events coming from the sketch.
+ * A user of this fragment *must* call set the [eventSink] before attaching it via a FragmentManager.
  */
 class ShowtimeFragment : Fragment(), EventSink {
     private val TAG = javaClass.simpleName
@@ -45,6 +45,7 @@ class ShowtimeFragment : Fragment(), EventSink {
 
     private val vibrator by lazy { applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
+    private val sensors by lazy { Sensors(applicationContext, eventSink) }
     private val userReporter by lazy { ToastReporter(context!!) }
     private val sketch by lazy { Sketch(this, userReporter) }
 
@@ -104,8 +105,8 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.PlayVideo -> onPlayVideo(directive)
             is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
-            is Directive.RegisterDistance -> sketch.startDistanceSensing()
-            is Directive.ReleaseDistance -> sketch.stopDistanceSensing()
+            is Directive.RegisterDistance -> sensors.startDistance()
+            is Directive.ReleaseDistance -> sensors.stopDistance()
             is Directive.RegisterAttitude -> sketch.startAttitudeSensing(directive.updateRate)
             is Directive.ReleaseAttitude -> sketch.stopAttitudeSensing()
             else -> throw UnsupportedOperationException("unsupported directive $directive")
