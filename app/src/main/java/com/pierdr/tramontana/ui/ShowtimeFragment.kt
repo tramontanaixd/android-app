@@ -2,7 +2,6 @@ package com.pierdr.tramontana.ui
 
 import android.content.Context
 import android.hardware.camera2.CameraManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
@@ -12,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.pierluigidallarosa.myactivity.Sketch
 import com.pierdr.tramontana.model.Directive
@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.fragment_showtime.*
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import processing.android.PFragment
+import java.io.File
 
 /**
  * Fragment to show when there's an active connection.
@@ -43,6 +44,8 @@ class ShowtimeFragment : Fragment(), EventSink {
     private lateinit var userReporter: UserReporter
     private lateinit var vibrator: Vibrator
     private lateinit var cameraManager: CameraManager
+
+    private lateinit var proxy: HttpProxyCacheServer
 
     lateinit var eventSink: EventSink
 
@@ -66,6 +69,10 @@ class ShowtimeFragment : Fragment(), EventSink {
         cameraManager = applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
         userReporter = ToastReporter(context!!)
+
+        proxy = HttpProxyCacheServer.Builder(applicationContext)
+                .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
+                .build()
 
         sketch = Sketch(this, userReporter)
         childFragmentManager.beginTransaction()
@@ -117,15 +124,17 @@ class ShowtimeFragment : Fragment(), EventSink {
     }
 
     private fun onPlayVideo(directive: Directive.PlayVideo) {
+        val url = directive.url
+
         video.setZOrderOnTop(true)
         contentToShow = ContentToShow.Video
-        Log.d(TAG, "loading video ${directive.url}")
+        Log.d(TAG, "loading video $url")
         video.setOnPreparedListener {
-            Log.d(TAG, "starting video ${directive.url}")
+            Log.d(TAG, "starting video $url")
             video.start()
         }
-        // TODO video cache
-        video.setVideoURI(Uri.parse(directive.url))
+        val proxyUrl = proxy.getProxyUrl(url)
+        video.setVideoPath(proxyUrl)
     }
 
     private fun setBrightness(brightness: Float) {
