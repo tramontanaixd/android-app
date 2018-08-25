@@ -40,12 +40,19 @@ class ShowtimeFragment : Fragment(), EventSink {
         Video
     }
 
-    private lateinit var sketch: Sketch
-    private lateinit var userReporter: UserReporter
-    private lateinit var vibrator: Vibrator
-    private lateinit var cameraManager: CameraManager
+    private val applicationContext: Context
+        get() = context!!.applicationContext
 
-    private lateinit var proxy: HttpProxyCacheServer
+    private val vibrator by lazy { applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
+    private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
+    private val userReporter by lazy { ToastReporter(context!!) }
+    private val sketch by lazy { Sketch(this, userReporter) }
+
+    private val proxy by lazy {
+        HttpProxyCacheServer.Builder(applicationContext)
+                .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
+                .build()
+    }
 
     lateinit var eventSink: EventSink
 
@@ -64,17 +71,6 @@ class ShowtimeFragment : Fragment(), EventSink {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val applicationContext = context!!.applicationContext
-        vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        cameraManager = applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
-        userReporter = ToastReporter(context!!)
-
-        proxy = HttpProxyCacheServer.Builder(applicationContext)
-                .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
-                .build()
-
-        sketch = Sketch(this, userReporter)
         childFragmentManager.beginTransaction()
                 .add(R.id.sketch_container, PFragment(sketch))
                 .commit()
