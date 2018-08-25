@@ -1,9 +1,7 @@
 package com.pierdr.pierluigidallarosa.myactivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -55,23 +53,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    }
-
-    // TODO move these Android callbacks to e.g. ShowtimeFragment
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
-                                           @NonNull int[] grantResults) {
-        if (sketch != null) {
-            sketch.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        if (sketch != null) {
-            sketch.onNewIntent(intent);
-        }
     }
 }
 
