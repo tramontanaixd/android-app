@@ -47,7 +47,7 @@ class ShowtimeFragment : Fragment(), EventSink {
     private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
     private val sensors by lazy { Sensors(applicationContext, eventSink) }
     private val userReporter by lazy { ToastReporter(context!!) }
-    private val sketch by lazy { Sketch(this, userReporter) }
+    private val sketch by lazy { Sketch(this) }
 
     private val videoProxy by lazy {
         HttpProxyCacheServer.Builder(applicationContext)
@@ -107,8 +107,8 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
             is Directive.RegisterDistance -> sensors.startDistance()
             is Directive.ReleaseDistance -> sensors.stopDistance()
-            is Directive.RegisterAttitude -> sketch.startAttitudeSensing(directive.updateRate)
-            is Directive.ReleaseAttitude -> sketch.stopAttitudeSensing()
+            is Directive.RegisterAttitude -> sensors.startAttitude(directive.updateRate)
+            is Directive.ReleaseAttitude -> sensors.stopAttitude()
             else -> throw UnsupportedOperationException("unsupported directive $directive")
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }

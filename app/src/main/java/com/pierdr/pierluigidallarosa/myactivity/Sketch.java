@@ -2,20 +2,12 @@ package com.pierdr.pierluigidallarosa.myactivity;
 
 import com.pierdr.tramontana.model.Event;
 import com.pierdr.tramontana.model.EventSink;
-import com.pierdr.tramontana.ui.UserReporter;
 
-import ketai.sensors.KetaiSensor;
 import processing.core.PApplet;
 import processing.event.TouchEvent;
 
 public class Sketch extends PApplet {
     private int bgRed=255,bgGreen=255,bgBlue=255;
-
-    //SENSORS
-    private KetaiSensor sensor;
-
-    private boolean sensingDistance;
-    private boolean sensingAttitude;
 
     private final static int TOUCH_INACTIVE         = 0;
     private final static int TOUCH_LISTENING        = 1;
@@ -26,22 +18,13 @@ public class Sketch extends PApplet {
     private TouchEvent.Pointer lastEvents[];
 
     private final EventSink eventSink;
-    private final UserReporter userReporter;
 
-    public Sketch(EventSink eventSink, UserReporter userReporter) {
+    public Sketch(EventSink eventSink) {
         this.eventSink = eventSink;
-        this.userReporter = userReporter;
     }
 
     public void settings() {
         fullScreen();
-    }
-
-    public void setup() {
-        sensor = new KetaiSensor(this);
-        sensor.enableProximity();
-        sensor.enableRotationVector();
-        sensor.start();
     }
 
     public void draw() {
@@ -108,51 +91,5 @@ public class Sketch extends PApplet {
             case TOUCH_LISTENING_MULTI:
                 break;
         }
-    }
-
-    //SENSORS
-    public void startAttitudeSensing(Float frameRate) {
-        if (!sensor.isAccelerometerAvailable()) {
-            userReporter.showWarning("rotation vector not available");
-            return;
-        }
-
-        sensor.setDelayInterval((int) (1000 / frameRate));
-        sensingAttitude = true;
-    }
-
-    public void stopAttitudeSensing()
-    {
-        sensingAttitude = false;
-    }
-
-    @SuppressWarnings("unused") // called by KetaiSensor via reflection
-    public void onRotationVectorEvent(float x, float y, float z, long a, int b) {
-        if (!sensingAttitude) {
-            return;
-        }
-        eventSink.onEvent(new Event.Attitude(x, y, z));
-    }
-
-    //SENSING DISTANCE
-    public void startDistanceSensing() {
-        if (!sensor.isProximityAvailable()) {
-            userReporter.showWarning("distance sensor not available!");
-            return;
-        }
-
-        sensingDistance = true;
-    }
-    public void stopDistanceSensing()
-    {
-        sensingDistance = false;
-    }
-
-    @SuppressWarnings("unused") // called by KetaiSensor via reflection
-    public void onProximityEvent(float d, long a, int b){
-        if (!sensingDistance) {
-            return;
-        }
-        eventSink.onEvent(new Event.Distance(d));
     }
 }
