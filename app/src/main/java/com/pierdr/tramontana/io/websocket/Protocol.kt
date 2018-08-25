@@ -1,4 +1,4 @@
-package com.pierdr.tramontana.websocket
+package com.pierdr.tramontana.io.websocket
 
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event

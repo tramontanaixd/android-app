@@ -4,11 +4,11 @@ import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
+import com.pierdr.tramontana.io.websocket.WebsocketServer
 import com.pierdr.tramontana.model.ClientSession
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
-import com.pierdr.tramontana.websocket.WebsocketServer
 import kotlinx.coroutines.experimental.launch
 
 

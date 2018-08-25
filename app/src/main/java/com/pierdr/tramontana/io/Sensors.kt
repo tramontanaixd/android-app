@@ -1,4 +1,4 @@
-package com.pierdr.tramontana.ui
+package com.pierdr.tramontana.io
 
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver

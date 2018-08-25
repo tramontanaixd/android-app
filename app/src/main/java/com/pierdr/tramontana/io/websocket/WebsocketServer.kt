@@ -1,4 +1,4 @@
-package com.pierdr.tramontana.websocket
+package com.pierdr.tramontana.io.websocket
 
 import android.util.Log
 import com.pierdr.tramontana.model.ClientSession

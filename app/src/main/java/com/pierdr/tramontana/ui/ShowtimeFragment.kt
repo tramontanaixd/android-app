@@ -13,7 +13,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
-import com.pierdr.pierluigidallarosa.myactivity.Sketch
+import com.pierdr.tramontana.io.Sensors
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
