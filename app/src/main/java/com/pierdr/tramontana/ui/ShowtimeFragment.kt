@@ -48,7 +48,7 @@ class ShowtimeFragment : Fragment(), EventSink {
     private val userReporter by lazy { ToastReporter(context!!) }
     private val sketch by lazy { Sketch(this, userReporter) }
 
-    private val proxy by lazy {
+    private val videoProxy by lazy {
         HttpProxyCacheServer.Builder(applicationContext)
                 .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
                 .build()
@@ -129,7 +129,7 @@ class ShowtimeFragment : Fragment(), EventSink {
             Log.d(TAG, "starting video $url")
             video.start()
         }
-        val proxyUrl = proxy.getProxyUrl(url)
+        val proxyUrl = videoProxy.getProxyUrl(url)
         video.setVideoPath(proxyUrl)
     }
 
