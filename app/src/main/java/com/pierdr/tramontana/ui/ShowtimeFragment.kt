@@ -45,8 +45,8 @@ class ShowtimeFragment : Fragment(), EventSink {
 
     private val vibrator by lazy { applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
-    private val sensors by lazy { Sensors(applicationContext, eventSink) }
     private val userReporter by lazy { ToastReporter(context!!) }
+    private val sensors by lazy { Sensors(applicationContext, eventSink, userReporter) }
     private val sketch by lazy { Sketch(this) }
 
     private val videoProxy by lazy {
@@ -105,10 +105,10 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.PlayVideo -> onPlayVideo(directive)
             is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
-            is Directive.RegisterDistance -> sensors.startDistance()
-            is Directive.ReleaseDistance -> sensors.stopDistance()
-            is Directive.RegisterAttitude -> sensors.startAttitude(directive.updateRate)
-            is Directive.ReleaseAttitude -> sensors.stopAttitude()
+            is Directive.RegisterDistance -> sensors.startSensor(Sensors.Type.PROXIMITY)
+            is Directive.ReleaseDistance -> sensors.stopSensor(Sensors.Type.PROXIMITY)
+            is Directive.RegisterAttitude -> sensors.startSensor(Sensors.Type.ROTATION, (1_000_000 / directive.updateRate).toInt())
+            is Directive.ReleaseAttitude -> sensors.stopSensor(Sensors.Type.ROTATION)
             else -> throw UnsupportedOperationException("unsupported directive $directive")
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
