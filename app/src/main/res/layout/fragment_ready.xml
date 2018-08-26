@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="0dp"
@@ -24,21 +23,20 @@
         app:layout_constraintVertical_bias="0.0">
 
         <TextView
-            android:id="@+id/ipAddressView"
-            android:layout_width="95dp"
-            android:layout_height="29dp"
-            android:text="--.--.--.--"
-            app:layout_constraintStart_toEndOf="@+id/textView3"
-            app:layout_constraintTop_toTopOf="@+id/textView3" />
+            android:id="@+id/ipAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="---.---.---.---"
+            app:layout_constraintStart_toEndOf="@id/ipAddressLabel"
+            app:layout_constraintTop_toTopOf="@id/ipAddressLabel" />
 
         <TextView
-            android:id="@+id/textView3"
-            android:layout_width="78dp"
-            android:layout_height="24dp"
-            android:layout_marginLeft="16dp"
+            android:id="@+id/ipAddressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="44dp"
-            android:text="IP Address:"
+            android:text="@string/ip_address_label"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -50,7 +48,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
-            android:text="Tramontana"
+            android:text="@string/app_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="#aaa"
             android:textSize="28sp"
@@ -74,21 +72,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/icon" />
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:onClick="onButtonPressed"
-            android:text="Close"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
         <TextView
             android:id="@+id/textView5"
             android:layout_width="260dp"
@@ -101,13 +84,13 @@
             android:layout_marginTop="48dp"
             android:background="#efefef"
             android:padding="5dp"
-            android:text="Console"
+            android:text="@string/console"
             android:textSize="12sp"
-            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintBottom_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.512"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipAddressView"
+            app:layout_constraintTop_toBottomOf="@id/ipAddress"
             app:layout_constraintVertical_bias="0.0" />
 
         <TextView
@@ -117,7 +100,6 @@
             android:background="#dfdfdf"
             android:lineSpacingMultiplier="1.5"
             android:padding="5dp"
-            android:text="  -"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@+id/textView5"
             app:layout_constraintTop_toBottomOf="@+id/textView5" />

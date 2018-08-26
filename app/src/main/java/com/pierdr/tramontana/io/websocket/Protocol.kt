@@ -1,50 +1,22 @@
-package com.pierdr.pierluigidallarosa.myactivity.websocket
+package com.pierdr.tramontana.io.websocket
 
-import com.pierdr.pierluigidallarosa.myactivity.ConsoleManager
-import com.pierdr.pierluigidallarosa.myactivity.Directive
-import com.pierdr.pierluigidallarosa.myactivity.DirectiveSource
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.launch
-import org.java_websocket.WebSocket
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Event
 import processing.core.PApplet
 import processing.data.JSONObject
 
-class WebsocketDirectiveSource
-internal constructor(
-        private val manager: WebsocketManager,
-        private val cm: ConsoleManager
-) : DirectiveSource {
-
-    override fun produceDirectives(): ReceiveChannel<Directive> {
-        val channel = Channel<Directive>()
-        val listener = object : WebsocketManager.WebsocketManagerListener {
-            override fun onNewMessage(message: String, socket: WebSocket) {
-                launch {
-                    channel.send(parseDirective(message))
-                }
-            }
-
-            override fun onNewConnection(newDevice: String) {
-                cm.addNewMessage("connection open with $newDevice")
-            }
-
-        }
-
-        manager.addAListener(listener)
-
-        return channel
-    }
-
-
-    private fun parseDirective(message: String): Directive {
+/**
+ * Implements the Tramontana JSON protocol. It has methods to transform JSON messages in [Directive] and
+ * [Event] objects into JSON messages.
+ */
+class Protocol {
+    fun parse(message: String): Directive {
         println("received a message")
         println(message)
 
         val json = JSONObject.parse(message)
 
         val directive = json.getString("m")
-        cm.addNewMessage("received msg: $directive")
 
         return when (directive) {
             "makeVibrate" -> Directive.MakeVibrate
@@ -90,5 +62,36 @@ internal constructor(
         val multi = json.hasKey("multi")
         val drag = json.get("m") == "registerTouchDrag"
         return Directive.RegisterTouch(multi, drag)
+    }
+
+    fun emit(event: Event): String = when (event) {
+        is Event.TouchDown -> {
+            JSONObject()
+                    .setString("m", "touchedDown")
+                    .setString("x", "${event.x}")
+                    .setString("y", "${event.y}")
+                    .toString()
+        }
+        is Event.Touched -> {
+            JSONObject()
+                    .setString("m", "touched")
+                    .setString("x", "${event.x}")
+                    .setString("y", "${event.y}")
+                    .toString()
+        }
+        is Event.Attitude -> {
+            JSONObject()
+                    .setString("m", "a")
+                    .setString("r", "${event.roll}")
+                    .setString("p", "${event.pitch}")
+                    .setString("y", "${event.yaw}")
+                    .toString()
+        }
+        is Event.Distance -> {
+            JSONObject()
+                    .setString("m", "distanceChanged")
+                    .setString("proximity", "${event.distance}")
+                    .toString()
+        }
     }
 }

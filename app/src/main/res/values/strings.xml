@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Tramontana</string>
+    <string name="ip_address_label">IP Address:&#160;</string>
+    <string name="console">Console</string>
 </resources>
