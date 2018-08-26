@@ -128,21 +128,167 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void startTouchListening(final boolean multi, final boolean drag) {
-        runWhenSketchIsReady(new Runnable() {
-            @Override
-            public void run() {
-                // FIXME let the sketch obtain the current websocket
-                sketch.startTouchListening(null, multi, drag);
-            }
-        });
-    }
+                cm.addNewMessage("received msg: "+directive);
 
-    public void stopTouchListening() {
-        if (isStarted) {
-            sketch.stopTouchListening();
-        }
-    }
+                if(directive.equals("makeVibrate"))
+                {
+                    onMakeVibrate();
+                }
+                else if(directive.equals("setColor"))
+                {
+                    int red,green,blue,alpha;
+                    System.out.println(json.getString("r").contains("."));
+                    if(json.getString("r").contains("."))
+                    {
+                        red      = (int)processing.core.PApplet.map(json.getFloat("r"),(float)0.0,(float)1.0,0,255);
+                        green    = (int)processing.core.PApplet.map(json.getFloat("g"),(float)0.0,(float)1.0,0,255);
+                        blue     = (int)processing.core.PApplet.map(json.getFloat("b"),(float)0.0,(float)1.0,0,255);
+                        alpha    = (int)processing.core.PApplet.map(json.getFloat("a"),(float)0.0,(float)1.0,0,255);
+                    }
+                    else {
+                        red     = json.getInt("r");
+                        green   = json.getInt("g");
+                        blue    = json.getInt("b");
+                        alpha   = json.getInt("a");
+                    }
+                    onSetColor(red,green,blue,alpha);
+                }
+                else if(directive.equals("transitionColors"))
+                {
+
+                }
+                else if(directive.equals("setBrightness")) {
+                    onSetBrightness(json.getFloat("b"));
+                }
+                else if(directive.equals("setLED")) {
+                    //startProcessingSketch();
+                    onSetFlashLight(json.getFloat("in"));
+                }
+                else if(directive.equals("pulseLED")) {
+                    //TODO TO BE IMPLEMENTED
+                    /*IT WORKS AS FOLLOW:
+                        receives 3 parameters:
+                        1. duration
+                        2. times
+                        3. intensity
+
+                        The incoming message is:
+                        "{\"m\":\"pulseLED\",\"t\":\""+numberOfPulses+"\",\"d\":\""+duration+"\",\"i\":\""+intensity+"\"}"
+                        The method might be something like:
+
+                        onPulseFlashLight(json.getFloat("t"),json.getFloat("i"),json.getFloat("d"));
+
+                    */
+
+                }
+                else if(directive.equals("getBattery")) {
+                    //TODO TO BE IMPLEMENTED
+                    //RETURNS A MESSAGE LIKE
+                    // "{\"m\":\"battery\",\"v\":\"0.05\"}"
+                }
+                else if(directive.equals("showImage"))
+                {
+                    onShowImage(json.getString("url"));
+                }
+                else if(directive.equals("playVideo"))
+                {
+                    onPlayVideo(json.getString("url"));
+                    //TODO WHEN VIDEO ENDED SHOULD SEND A MESSAGE TO CLIENT LIKE:
+                    //"{\"m\":\"videoEnded\"}"
+                }
+                else if(directive.equals("loopVideo"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("playAudio"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+
+                else if(directive.equals("registerTouch") || directive.equals("registerTouchDrag"))
+                {
+                    boolean hasMultiTouch = false;
+                    if(json.hasKey("multi"))
+                    {
+                        hasMultiTouch = json.getInt("multi") == 1;
+                    }
+                    if(!isStarted)
+                    {
+                        startProcessingSketch();
+                        class myRunTmp implements Runnable {
+
+                            private boolean multi;
+                            private boolean drag;
+
+                            private myRunTmp(boolean multi, boolean drag) {
+                                this.multi = multi;
+                                this.drag = drag;
+                            }
+
+                            public void run() {
+                                sketch.startTouchListening(socket,multi,drag );
+                            }
+                        }
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new myRunTmp(hasMultiTouch, directive.equals("registerTouchDrag")), 500);
+                    }
+                    else
+                    {
+                        sketch.startTouchListening(socket,hasMultiTouch, directive.equals("registerTouchDrag"));
+                    }
+                }
+
+                else if(directive.equals("releaseTouch"))
+                {
+                    if(isStarted) {
+                        sketch.stopTouchListening();
+                    }
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerAudioJack"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseAudioJack"))
+                {
+                    //TODO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerOrientation"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseOrientation"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerMagnetometer"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releaseMagnetometer"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerPowerSource"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                else if(directive.equals("releasePowerSource"))
+                {
+                    //TODO TO BE IMPLEMENTED
+                }
+                //--------------------------------------------------------------
+                else if(directive.equals("registerDistance"))
+                {
+                    if(!isStarted)
+                    {
+                        startProcessingSketch();
+                        class myRunTmp implements Runnable {
 
     public void startDistanceSensing() {
         runWhenSketchIsReady(new Runnable() {
@@ -230,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void startPlayingVideo(String localVideoSrc)
     {
+
         try {
             videoView = new VideoView(this);
             frame.addView(videoView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
