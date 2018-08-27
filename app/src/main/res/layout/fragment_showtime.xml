@@ -17,5 +17,7 @@
     <VideoView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/video" />
+        android:id="@+id/video"
+        android:background="#00000000"
+        />
 </FrameLayout>
