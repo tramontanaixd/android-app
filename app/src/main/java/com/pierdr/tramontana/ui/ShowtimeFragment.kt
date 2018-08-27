@@ -130,6 +130,9 @@ class ShowtimeFragment : Fragment(), EventSink {
             Log.d(TAG, "starting video $url")
             video.start()
         }
+        video.setOnCompletionListener {
+            eventSink.onEvent(Event.VideoEnded)
+        }
         val proxyUrl = videoProxy.getProxyUrl(url)
         video.setVideoPath(proxyUrl)
     }

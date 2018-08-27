@@ -93,5 +93,10 @@ class Protocol {
                     .setString("proximity", "${event.distance}")
                     .toString()
         }
+        is Event.VideoEnded -> {
+            JSONObject()
+                    .setString("m", "videoEnded")
+                    .toString()
+        }
     }
 }

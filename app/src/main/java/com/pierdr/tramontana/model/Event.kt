@@ -20,4 +20,6 @@ sealed class Event {
     data class Distance(
             val distance: Float
     ) : Event()
+
+    object VideoEnded : Event()
 }
