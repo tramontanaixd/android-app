@@ -100,6 +100,7 @@ class ShowtimeFragment : Fragment(), EventSink {
                         directive.blue)
                 setBrightness(directive.alpha / 255.0f)
             }
+            is Directive.SetBrightness -> setBrightness(directive.brightness)
             is Directive.SetLed -> setFlashLight(directive.intensity)
             is Directive.ShowImage -> onShowImage(directive)
             is Directive.PlayVideo -> onPlayVideo(directive)
@@ -107,11 +108,16 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
             is Directive.RegisterDistance -> sensors.startSensor(Sensors.Type.PROXIMITY)
             is Directive.ReleaseDistance -> sensors.stopSensor(Sensors.Type.PROXIMITY)
-            is Directive.RegisterAttitude -> sensors.startSensor(Sensors.Type.ROTATION, (1_000_000 / directive.updateRate).toInt())
+            is Directive.RegisterAttitude -> sensors.startSensor(Sensors.Type.ROTATION, directive.updateRate.toMicros())
             is Directive.ReleaseAttitude -> sensors.stopSensor(Sensors.Type.ROTATION)
-            else -> throw UnsupportedOperationException("unsupported directive $directive")
+            is Directive.RegisterOrientation -> sensors.startSensor(Sensors.Type.ORIENTATION, directive.updateRate.toMicros())
+            is Directive.ReleaseOrientation -> sensors.stopSensor(Sensors.Type.ORIENTATION)
+            is Directive.RegisterMagnetometer -> sensors.startSensor(Sensors.Type.MAGNETOMETER, directive.updateRate.toMicros())
+            is Directive.ReleaseMagnetometer -> sensors.stopSensor(Sensors.Type.MAGNETOMETER)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
+
+    private fun Float.toMicros() = (1_000_000 / this).toInt()
 
     private fun onShowImage(directive: Directive.ShowImage) {
         contentToShow = ContentToShow.Image

@@ -43,11 +43,23 @@ sealed class Directive {
 
     object ReleaseDistance : Directive()
 
+    data class RegisterOrientation(
+            val updateRate: Float
+    ) : Directive()
+
+    object ReleaseOrientation : Directive()
+
     data class RegisterAttitude(
             val updateRate: Float
     ) : Directive()
 
     object ReleaseAttitude : Directive()
+
+    data class RegisterMagnetometer(
+            val updateRate: Float
+    ) : Directive()
+
+    object ReleaseMagnetometer : Directive()
 
     // TODO directive transitionColors
     // TODO directive pulseLED
@@ -69,10 +81,6 @@ sealed class Directive {
     //RETURNS A MESSAGE LIKE
     // "{\"m\":\"battery\",\"v\":\"0.05\"}"
     // TODO directive playAudio
-    // TODO directive registerOrientation
-    // TODO directive releaseOrientation
-    // TODO directive registerMagnetometer
-    // TODO directive releaseMagnetometer
     // TODO directive registerPowerSource
     // TODO directive releasePowerSource
     // TODO directive registerAudioJack

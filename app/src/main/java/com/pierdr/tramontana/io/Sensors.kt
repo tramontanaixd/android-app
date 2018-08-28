@@ -50,7 +50,9 @@ class Sensors(
             when (type) {
                 Sensors.Type.PROXIMITY -> eventSink.onEvent(Event.Distance(event.values[0]))
                 Sensors.Type.ROTATION -> eventSink.onEvent(Event.Attitude(event.values[0], event.values[1], event.values[2]))
-            }
+                Sensors.Type.ORIENTATION -> TODO("determine orientation event format")
+                Sensors.Type.MAGNETOMETER -> TODO("determina magnetometer event format")
+            }.javaClass // for "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
         }
     }
 
@@ -74,11 +76,15 @@ class Sensors(
 
     enum class Type {
         PROXIMITY,
-        ROTATION
+        ROTATION,
+        ORIENTATION,
+        MAGNETOMETER
     }
 
     private fun Type.toAndroidSensorType(): Int = when (this) {
         Sensors.Type.PROXIMITY -> Sensor.TYPE_PROXIMITY
         Sensors.Type.ROTATION -> Sensor.TYPE_ROTATION_VECTOR
+        Sensors.Type.ORIENTATION -> Sensor.TYPE_ORIENTATION // TODO use non-deprecated orientation sensor
+        Sensors.Type.MAGNETOMETER -> Sensor.TYPE_MAGNETIC_FIELD
     }
 }

@@ -63,6 +63,7 @@ public class Sketch extends PApplet {
 
                 break;
             case TOUCH_LISTENING_MULTI:
+                // TODO add multi-touch listening
                 //{\"m\":\"touched\",\"ts\":%@}
                 break;
 

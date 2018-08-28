@@ -31,6 +31,11 @@ class Protocol {
             "releaseDistance" -> Directive.ReleaseDistance
             "registerAttitude" -> Directive.RegisterAttitude(json.getFloat("f"))
             "releaseAttitude" -> Directive.ReleaseAttitude
+            "registerOrientation" -> Directive.RegisterOrientation(json.getFloat("f"))
+            "releaseOrientation" -> Directive.ReleaseOrientation
+            "registerMagnetometer" -> Directive.RegisterMagnetometer(json.getFloat("f"))
+            "releaseMagnetometer" -> Directive.ReleaseMagnetometer
+
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
