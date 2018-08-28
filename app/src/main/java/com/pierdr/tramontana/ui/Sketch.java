@@ -2,6 +2,10 @@ package com.pierdr.tramontana.ui;
 
 import com.pierdr.tramontana.model.Event;
 import com.pierdr.tramontana.model.EventSink;
+import com.pierdr.tramontana.model.TouchPoint;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import processing.core.PApplet;
 import processing.event.TouchEvent;
@@ -60,11 +64,17 @@ public class Sketch extends PApplet {
                 if (touches.length > 0) {
                     eventSink.onEvent(new Event.TouchDown((int) touches[0].x, (int) touches[0].y));
                 }
+                // TODO add drag listening
 
                 break;
             case TOUCH_LISTENING_MULTI:
-                // TODO add multi-touch listening
-                //{\"m\":\"touched\",\"ts\":%@}
+                if (touches.length > 0) {
+                    List<TouchPoint> touchPoints = new ArrayList<>();
+                    for (TouchEvent.Pointer touch : touches) {
+                        touchPoints.add(new TouchPoint((int) touch.x, (int) touch.y));
+                    }
+                    eventSink.onEvent(new Event.MultiTouchDown(touchPoints));
+                }
                 break;
 
         }

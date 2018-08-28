@@ -6,6 +6,10 @@ sealed class Event {
             val y: Int
     ) : Event()
 
+    data class MultiTouchDown(
+            val touches: List<TouchPoint>
+    ) : Event()
+
     data class Touched(
             val x: Int,
             val y: Int
@@ -23,3 +27,8 @@ sealed class Event {
 
     object VideoEnded : Event()
 }
+
+data class TouchPoint(
+        val x: Int,
+        val y: Int
+)

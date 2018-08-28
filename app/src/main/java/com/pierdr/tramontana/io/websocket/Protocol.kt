@@ -3,6 +3,7 @@ package com.pierdr.tramontana.io.websocket
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import processing.core.PApplet
+import processing.data.JSONArray
 import processing.data.JSONObject
 
 /**
@@ -75,6 +76,19 @@ class Protocol {
                     .setString("m", "touchedDown")
                     .setString("x", "${event.x}")
                     .setString("y", "${event.y}")
+                    .toString()
+        }
+        is Event.MultiTouchDown -> {
+            JSONObject()
+                    .setString("m", "touched")
+                    .setJSONArray("ts", JSONArray().apply {
+                        event.touches.forEach {
+                            append(JSONObject()
+                                    .setString("x", "${it.x}")
+                                    .setString("y", "${it.y}")
+                            )
+                        }
+                    })
                     .toString()
         }
         is Event.Touched -> {
