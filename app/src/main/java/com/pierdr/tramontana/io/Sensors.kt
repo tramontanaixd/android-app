@@ -11,7 +11,7 @@ import android.hardware.SensorManager
 import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
-import com.pierdr.tramontana.ui.UserReporter
+import com.pierdr.tramontana.model.UserReporter
 
 class Sensors(
         private val applicationContext: Context,

@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.tramontana.io.Sensors
@@ -158,17 +157,5 @@ class ShowtimeFragment : Fragment(), EventSink {
             val cameraId: String = cameraManager.cameraIdList[0]
             cameraManager.setTorchMode(cameraId, value > 0)
         }
-    }
-}
-
-interface UserReporter {
-    fun showWarning(message: String)
-}
-
-class ToastReporter(
-        private val context: Context
-) : UserReporter {
-    override fun showWarning(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 }
