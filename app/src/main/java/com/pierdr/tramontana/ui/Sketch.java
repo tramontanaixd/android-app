@@ -1,11 +1,12 @@
 package com.pierdr.tramontana.ui;
 
-import com.pierdr.tramontana.model.Event;
 import com.pierdr.tramontana.model.EventSink;
-import com.pierdr.tramontana.model.TouchPoint;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.pierdr.tramontana.ui.touch.MultiDragTouchHandler;
+import com.pierdr.tramontana.ui.touch.MultiTouchHandler;
+import com.pierdr.tramontana.ui.touch.NoTouchHandler;
+import com.pierdr.tramontana.ui.touch.SingleDragTouchHandler;
+import com.pierdr.tramontana.ui.touch.SingleTouchHandler;
+import com.pierdr.tramontana.ui.touch.TouchHandler;
 
 import processing.core.PApplet;
 import processing.event.TouchEvent;
@@ -13,15 +14,8 @@ import processing.event.TouchEvent;
 public class Sketch extends PApplet {
     private int bgRed = 255, bgGreen = 255, bgBlue = 255;
 
-    private final static int TOUCH_INACTIVE = 0;
-    private final static int TOUCH_LISTENING = 1;
-    private final static int TOUCH_LISTENING_MULTI = 2;
-    private final static int TOUCH_DRAG_LISTENING = 3;
-
-    private int touchState = TOUCH_INACTIVE;
-    private TouchEvent.Pointer lastEvents[];
-
     private final EventSink eventSink;
+    private TouchHandler touchHandler = new NoTouchHandler();
 
     public Sketch(EventSink eventSink) {
         this.eventSink = eventSink;
@@ -42,60 +36,30 @@ public class Sketch extends PApplet {
     }
 
     public void startTouchListening(boolean multi, boolean drag) {
-        if (multi && drag) {
-            touchState = TOUCH_DRAG_LISTENING;
+        if (!multi && !drag) {
+            touchHandler = new SingleTouchHandler(eventSink);
+        } else if (multi && drag) {
+            touchHandler = new MultiDragTouchHandler(eventSink);
         } else if (multi) {
-            touchState = TOUCH_LISTENING_MULTI;
-        } else if (!drag) {
-            touchState = TOUCH_LISTENING;
+            touchHandler = new MultiTouchHandler(eventSink);
+        } else {
+            touchHandler = new SingleDragTouchHandler(eventSink);
         }
     }
 
     public void stopTouchListening() {
-        touchState = TOUCH_INACTIVE;
+        touchHandler = new NoTouchHandler();
     }
 
     public void touchStarted() {
-        lastEvents = touches;
-        switch (touchState) {
-            case TOUCH_LISTENING:
-            case TOUCH_DRAG_LISTENING:
-
-                if (touches.length > 0) {
-                    eventSink.onEvent(new Event.TouchDown((int) touches[0].x, (int) touches[0].y));
-                }
-                // TODO add drag listening
-
-                break;
-            case TOUCH_LISTENING_MULTI:
-                if (touches.length > 0) {
-                    List<TouchPoint> touchPoints = new ArrayList<>();
-                    for (TouchEvent.Pointer touch : touches) {
-                        touchPoints.add(new TouchPoint((int) touch.x, (int) touch.y));
-                    }
-                    eventSink.onEvent(new Event.MultiTouchDown(touchPoints));
-                }
-                break;
-
-        }
+        touchHandler.onTouchStart(touches);
     }
 
     public void touchMoved() {
-        lastEvents = touches;
+        touchHandler.onTouchMove(touches);
     }
 
     public void touchEnded() {
-        switch (touchState) {
-            case TOUCH_LISTENING:
-            case TOUCH_DRAG_LISTENING:
-
-                if (lastEvents.length > 0) {
-                    eventSink.onEvent(new Event.Touched((int) lastEvents[0].x, (int) lastEvents[0].y));
-                }
-
-                break;
-            case TOUCH_LISTENING_MULTI:
-                break;
-        }
+        touchHandler.onTouchEnd(touches);
     }
 }

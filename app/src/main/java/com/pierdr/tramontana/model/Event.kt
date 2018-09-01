@@ -1,18 +1,31 @@
 package com.pierdr.tramontana.model
 
 sealed class Event {
-    data class TouchDown(
+    data class TouchStart(
             val x: Int,
             val y: Int
     ) : Event()
 
-    data class MultiTouchDown(
+    data class MultiTouchStart(
             val touches: List<TouchPoint>
     ) : Event()
 
-    data class Touched(
+    data class TouchDrag(
             val x: Int,
             val y: Int
+    ) : Event()
+
+    data class MultiTouchDrag(
+            val touches: List<TouchPoint>
+    ) : Event()
+
+    data class TouchEnd(
+            val x: Int,
+            val y: Int
+    ) : Event()
+
+    data class MultiTouchEnd(
+            val touches: List<TouchPoint>
     ) : Event()
 
     data class Attitude(

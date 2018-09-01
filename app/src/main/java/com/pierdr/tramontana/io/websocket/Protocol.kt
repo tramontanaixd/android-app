@@ -2,6 +2,7 @@ package com.pierdr.tramontana.io.websocket
 
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.TouchPoint
 import processing.core.PApplet
 import processing.data.JSONArray
 import processing.data.JSONObject
@@ -27,7 +28,7 @@ class Protocol {
             "showImage" -> Directive.ShowImage(json.getString("url"))
             "playVideo" -> Directive.PlayVideo(json.getString("url"))
             "registerTouch", "registerTouchDrag" -> parseRegisterTouch(json)
-            "releaseTouch" -> Directive.ReleaseTouch
+            "releaseTouch", "releaseTouchDrag" -> Directive.ReleaseTouch
             "registerDistance" -> Directive.RegisterDistance
             "releaseDistance" -> Directive.ReleaseDistance
             "registerAttitude" -> Directive.RegisterAttitude(json.getFloat("f"))
@@ -71,32 +72,35 @@ class Protocol {
     }
 
     fun emit(event: Event): String = when (event) {
-        is Event.TouchDown -> {
+        is Event.TouchStart -> {
             JSONObject()
                     .setString("m", "touchedDown")
-                    .setString("x", "${event.x}")
-                    .setString("y", "${event.y}")
-                    .toString()
+                    .setXyMembers(event.x, event.y)
         }
-        is Event.MultiTouchDown -> {
+        is Event.MultiTouchStart -> {
+            JSONObject()
+                    .setString("m", "touchedDown")
+                    .setTsMember(event.touches)
+        }
+        is Event.TouchDrag -> {
+            JSONObject()
+                    .setString("m", "drag")
+                    .setXyMembers(event.x, event.y)
+        }
+        is Event.MultiTouchDrag -> {
+            JSONObject()
+                    .setString("m", "drag")
+                    .setTsMember(event.touches)
+        }
+        is Event.TouchEnd -> {
             JSONObject()
                     .setString("m", "touched")
-                    .setJSONArray("ts", JSONArray().apply {
-                        event.touches.forEach {
-                            append(JSONObject()
-                                    .setString("x", "${it.x}")
-                                    .setString("y", "${it.y}")
-                            )
-                        }
-                    })
-                    .toString()
+                    .setXyMembers(event.x, event.y)
         }
-        is Event.Touched -> {
+        is Event.MultiTouchEnd -> {
             JSONObject()
                     .setString("m", "touched")
-                    .setString("x", "${event.x}")
-                    .setString("y", "${event.y}")
-                    .toString()
+                    .setTsMember(event.touches)
         }
         is Event.Attitude -> {
             JSONObject()
@@ -104,18 +108,26 @@ class Protocol {
                     .setString("r", "${event.roll}")
                     .setString("p", "${event.pitch}")
                     .setString("y", "${event.yaw}")
-                    .toString()
         }
         is Event.Distance -> {
             JSONObject()
                     .setString("m", "distanceChanged")
                     .setString("proximity", "${event.distance}")
-                    .toString()
         }
         is Event.VideoEnded -> {
             JSONObject()
                     .setString("m", "videoEnded")
-                    .toString()
         }
-    }
+    }.toString()
+
+    private fun JSONObject.setXyMembers(x: Int, y: Int) = this
+            .setString("x", "$x")
+            .setString("y", "$y")
+
+    private fun JSONObject.setTsMember(touches: List<TouchPoint>) = this
+            .setJSONArray("ts", JSONArray().apply {
+                touches.forEach {
+                    append(JSONObject().setXyMembers(it.x, it.y))
+                }
+            })
 }
