@@ -1,0 +1,16 @@
+static def getBugfenderApiKey() {
+    Properties properties = new Properties()
+    properties.load(new FileInputStream("/Users/enrico/.bugfender.properties"))
+    return "\"" + properties.getProperty("bugfenderApiKey") + "\""
+}
+
+
+android {
+    buildTypes.each {
+        it.buildConfigField 'String', 'BUGFENDER_API_KEY', getBugfenderApiKey()
+    }
+}
+
+dependencies {
+    implementation 'com.bugfender.sdk:android:1.0.11'
+}
