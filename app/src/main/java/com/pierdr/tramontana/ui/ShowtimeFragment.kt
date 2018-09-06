@@ -64,6 +64,16 @@ class ShowtimeFragment : Fragment(), EventSink {
             field = value
         }
 
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        lifecycle.addObserver(sensors)
+    }
+
+    override fun onDetach() {
+        lifecycle.removeObserver(sensors)
+        super.onDetach()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_showtime, container, false)
     }
