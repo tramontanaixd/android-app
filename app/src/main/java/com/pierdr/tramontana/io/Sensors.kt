@@ -44,7 +44,7 @@ class Sensors(
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onSensorChanged(event: SensorEvent) {
-        Log.d(tag, "onSensorChanged $event")
+        Log.v(tag, "onSensorChanged $event")
         for ((type, sensor) in availableSensors.entries) {
             if (event.sensor != sensor) continue
             when (type) {

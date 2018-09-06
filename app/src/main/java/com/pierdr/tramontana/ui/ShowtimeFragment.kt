@@ -91,7 +91,7 @@ class ShowtimeFragment : Fragment(), EventSink {
     }
 
     fun runDirective(directive: Directive) {
-        Log.d(TAG, "would run directive $directive")
+        Log.v(TAG, "would run directive $directive")
         launch(UI) {
             runDirectiveOnUiThread(directive)
         }

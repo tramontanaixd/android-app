@@ -33,13 +33,13 @@ class WebsocketServer : Server {
         websocketServer.start()
         websocketServer.attachBehavior(object : WebSocketServerBehavior() {
             override fun onStart() {
-                Log.d(TAG, "server started")
+                Log.i(TAG, "server started")
                 continuation.resume(Unit)
                 websocketServer.detachBehavior()
             }
 
             override fun onError(conn: WebSocket?, ex: Exception) {
-                Log.d(TAG, "unable to start server: $ex")
+                Log.w(TAG, "unable to start server: $ex")
                 if (conn != null) throw IllegalStateException("didn't expect a connection, but here it is: $conn")
                 continuation.resumeWithException(ex)
                 websocketServer.detachBehavior()
@@ -70,19 +70,19 @@ class WebsocketServer : Server {
             websocketServer.attachBehavior(object : WebSocketServerBehavior() {
                 private var currentSession: WebSocketClientSession? = null
                 override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
-                    Log.d(TAG, "onOpen $conn")
+                    Log.i(TAG, "onOpen $conn")
                     if (currentSession != null) throw IllegalStateException("multiple connections are not supported")
                     launch {
                         val newSession = WebSocketClientSession(conn)
-                        Log.d(TAG, "creating new session $newSession")
+                        Log.v(TAG, "creating new session $newSession")
                         currentSession = newSession
                         channel.send(newSession)
-                        Log.d(TAG, "session sent to recipient")
+                        Log.v(TAG, "session sent to recipient")
                     }
                 }
 
                 override fun onClose(conn: WebSocket, code: Int, reason: String?, remote: Boolean) {
-                    Log.d(TAG, "onClose $conn")
+                    Log.i(TAG, "onClose $conn")
                     val session = currentSession
                             ?: throw IllegalStateException("no connection to close")
                     if (conn != session.connection) throw IllegalAccessException("connection $conn is close but it's not ours, ${session.connection}")
@@ -91,7 +91,7 @@ class WebsocketServer : Server {
                 }
 
                 override fun onMessage(conn: WebSocket, message: String) {
-                    Log.d(TAG, "onMessage $conn $message")
+                    Log.v(TAG, "onMessage $conn $message")
                     val session = currentSession
                             ?: throw IllegalStateException("no connection to close")
                     if (conn != session.connection) throw IllegalAccessException("connection $conn is close but it's not ours, ${session.connection}")
@@ -119,7 +119,7 @@ class WebSocketClientSession(
 
     override fun sendEvent(event: Event) {
         val message = protocol.emit(event)
-        Log.d(TAG, "sending message $message")
+        Log.v(TAG, "sending message $message")
         connection.send(message)
     }
 

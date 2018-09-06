@@ -35,7 +35,7 @@ class MainPresenter(
     }
 
     private fun handleClientSession(session: ClientSession) {
-        Log.d(TAG, "got client session $session")
+        Log.i(TAG, "got client session $session")
         currentSession = session
         view.showShowtimeFragment()
 
@@ -52,7 +52,7 @@ class MainPresenter(
     }
 
     override fun onEvent(event: Event) {
-        Log.d(TAG, "got event $event")
+        Log.v(TAG, "got event $event")
         currentSession?.sendEvent(event)
                 ?: throw IllegalStateException("got event with no session: $event")
     }
