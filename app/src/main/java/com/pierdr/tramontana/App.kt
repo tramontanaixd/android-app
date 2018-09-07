@@ -8,6 +8,14 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        initBugfender()
+    }
+
+    fun initBugfender() {
+        if (BuildConfig.BUGFENDER_API_KEY == null) {
+            return
+        }
+
         Bugfender.init(this, BuildConfig.BUGFENDER_API_KEY, BuildConfig.DEBUG)
         Bugfender.enableLogcatLogging()
         Bugfender.enableUIEventLogging(this)

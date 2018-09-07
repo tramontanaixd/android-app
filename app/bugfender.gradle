@@ -1,13 +1,17 @@
-static def getBugfenderApiKey() {
+static def getBugfenderApiKeyValue() {
     Properties properties = new Properties()
-    properties.load(new FileInputStream("/Users/enrico/.bugfender.properties"))
+    def bugfenderConfigFile = new File("/Users/enrico/.bugfender.properties")
+    if (!bugfenderConfigFile.exists()) {
+        return "null"
+    }
+    properties.load(new FileInputStream(bugfenderConfigFile))
     return "\"" + properties.getProperty("bugfenderApiKey") + "\""
 }
 
 
 android {
     buildTypes.each {
-        it.buildConfigField 'String', 'BUGFENDER_API_KEY', getBugfenderApiKey()
+        it.buildConfigField 'String', 'BUGFENDER_API_KEY', getBugfenderApiKeyValue()
     }
 }
 
