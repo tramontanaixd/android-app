@@ -12,7 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
-import com.pierdr.tramontana.io.Sensors
+import com.pierdr.tramontana.io.*
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
@@ -112,14 +112,14 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.PlayVideo -> onPlayVideo(directive)
             is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> sketch.stopTouchListening()
-            is Directive.RegisterDistance -> sensors.startSensor(Sensors.Type.PROXIMITY)
-            is Directive.ReleaseDistance -> sensors.stopSensor(Sensors.Type.PROXIMITY)
-            is Directive.RegisterAttitude -> sensors.startSensor(Sensors.Type.ROTATION, directive.updateRate.toMicros())
-            is Directive.ReleaseAttitude -> sensors.stopSensor(Sensors.Type.ROTATION)
-            is Directive.RegisterOrientation -> sensors.startSensor(Sensors.Type.ORIENTATION, directive.updateRate.toMicros())
-            is Directive.ReleaseOrientation -> sensors.stopSensor(Sensors.Type.ORIENTATION)
-            is Directive.RegisterMagnetometer -> sensors.startSensor(Sensors.Type.MAGNETOMETER, directive.updateRate.toMicros())
-            is Directive.ReleaseMagnetometer -> sensors.stopSensor(Sensors.Type.MAGNETOMETER)
+            is Directive.RegisterDistance -> sensors.startSensor(Proximity::class)
+            is Directive.ReleaseDistance -> sensors.stopSensor(Proximity::class)
+            is Directive.RegisterAttitude -> sensors.startSensor(Attitude::class, directive.updateRate.toMicros())
+            is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
+            is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class, directive.updateRate.toMicros())
+            is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
+            is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
+            is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 

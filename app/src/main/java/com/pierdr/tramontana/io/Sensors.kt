@@ -8,83 +8,109 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.UserReporter
+import kotlin.reflect.KClass
 
 class Sensors(
-        private val applicationContext: Context,
-        private val eventSink: EventSink,
+        applicationContext: Context,
+        eventSink: EventSink,
         private val userReporter: UserReporter
-) : LifecycleObserver, SensorEventListener {
+) : LifecycleObserver {
     private val tag = "Sensors"
 
-    private val sensorManager by lazy { applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    private val availableSensors: Map<KClass<out TramontanaSensor>, TramontanaSensor>
 
-    private val availableSensors = HashMap<Type, Sensor>()
-
-    private val registeredSensors = HashSet<Sensor>()
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun collectAvailableSensors() {
-        for (type in Type.values()) {
-            availableSensors[type] = sensorManager.getDefaultSensor(type.toAndroidSensorType())
-        }
+    init {
+        val allSensors = listOf(
+                Proximity(eventSink, applicationContext),
+                Attitude(eventSink, applicationContext),
+                Orientation(eventSink, applicationContext),
+                Magnetometer(eventSink, applicationContext)
+        )
+        availableSensors = allSensors
+                .filter { it.isAvailable }
+                .associateBy { it::class }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun unregisterAllSensors() {
-        for (sensor in registeredSensors) {
-            sensorManager.unregisterListener(this, sensor)
-        }
-        registeredSensors.clear()
+        availableSensors.values.forEach { it.stop() }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-    override fun onSensorChanged(event: SensorEvent) {
-        Log.v(tag, "onSensorChanged $event")
-        for ((type, sensor) in availableSensors.entries) {
-            if (event.sensor != sensor) continue
-            when (type) {
-                Sensors.Type.PROXIMITY -> eventSink.onEvent(Event.Distance(event.values[0]))
-                Sensors.Type.ROTATION -> eventSink.onEvent(Event.Attitude(event.values[0], event.values[1], event.values[2]))
-                Sensors.Type.ORIENTATION -> TODO("determine orientation event format")
-                Sensors.Type.MAGNETOMETER -> TODO("determina magnetometer event format")
-            }.javaClass // for "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
-        }
-    }
-
-    fun startSensor(type: Type, samplingPeriodUs: Int = SensorManager.SENSOR_DELAY_UI) {
-        val sensor = availableSensors[type]
-        if (sensor == null) {
-            userReporter.showWarning("Sensor of type $type is not available on this device.")
+    fun startSensor(sensorClass: KClass<out TramontanaSensor>, samplingPeriodUs: Int = SensorManager.SENSOR_DELAY_UI) {
+        val sensor = availableSensors[sensorClass]!!
+        if (!sensor.isAvailable) {
+            userReporter.showWarning("Sensor of type $sensorClass is not available on this device.")
             return
         }
-        if (registeredSensors.contains(sensor)) return
+        sensor.start(samplingPeriodUs)
+    }
+
+    fun stopSensor(sensorClass: KClass<out TramontanaSensor>) {
+        availableSensors[sensorClass]!!.stop()
+    }
+}
+
+sealed class TramontanaSensor(
+        val eventSink: EventSink
+) {
+    abstract val isAvailable: Boolean
+    abstract fun start(samplingPeriodUs: Int)
+    abstract val isRunning: Boolean
+    abstract fun stop()
+}
+
+/** A [TramontanaSensor] that directly maps to an Android [android.hardware.Sensor]. */
+abstract class SimpleAndroidSensor(
+        eventSink: EventSink,
+        applicationContext: Context,
+        type: Int
+) : TramontanaSensor(eventSink), SensorEventListener {
+    private val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensor = sensorManager.getDefaultSensor(type)
+
+    override val isAvailable: Boolean
+        get() = sensor != null
+
+    override fun start(samplingPeriodUs: Int) {
+        if (isRunning) return
         sensorManager.registerListener(this, sensor, samplingPeriodUs)
-        registeredSensors.add(sensor)
+        isRunning = true
     }
 
-    fun stopSensor(type: Type) {
-        val sensor = availableSensors[type] ?: return
-        if (!registeredSensors.contains(sensor)) return
+    override var isRunning = false
+
+    override fun stop() {
+        if (!isRunning) return
         sensorManager.unregisterListener(this, sensor)
-        registeredSensors.remove(sensor)
+        isRunning = false
     }
 
-    enum class Type {
-        PROXIMITY,
-        ROTATION,
-        ORIENTATION,
-        MAGNETOMETER
-    }
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+}
 
-    private fun Type.toAndroidSensorType(): Int = when (this) {
-        Sensors.Type.PROXIMITY -> Sensor.TYPE_PROXIMITY
-        Sensors.Type.ROTATION -> Sensor.TYPE_ROTATION_VECTOR
-        Sensors.Type.ORIENTATION -> Sensor.TYPE_ORIENTATION // TODO use non-deprecated orientation sensor
-        Sensors.Type.MAGNETOMETER -> Sensor.TYPE_MAGNETIC_FIELD
+class Proximity(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_PROXIMITY) {
+    override fun onSensorChanged(event: SensorEvent) {
+        eventSink.onEvent(Event.Distance(event.values[0]))
+    }
+}
+
+class Attitude(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ROTATION_VECTOR) {
+    override fun onSensorChanged(event: SensorEvent) {
+        eventSink.onEvent(Event.Attitude(event.values[0], event.values[1], event.values[2]))
+    }
+}
+
+class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ORIENTATION) {
+    override fun onSensorChanged(event: SensorEvent?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+}
+
+class Magnetometer(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_MAGNETIC_FIELD) {
+    override fun onSensorChanged(event: SensorEvent?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
