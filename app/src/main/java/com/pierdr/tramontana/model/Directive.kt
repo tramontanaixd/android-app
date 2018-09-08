@@ -73,7 +73,6 @@ sealed class Directive {
 
     object ReleaseMagnetometer : Directive()
 
-    // TODO directive transitionColors
     // TODO directive pulseLED
     /*IT WORKS AS FOLLOW:
         receives 3 parameters:
