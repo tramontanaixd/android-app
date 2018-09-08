@@ -11,6 +11,7 @@ class App : Application() {
         initBugfender()
     }
 
+    @Suppress("SENSELESS_COMPARISON")
     fun initBugfender() {
         if (BuildConfig.BUGFENDER_API_KEY == null) {
             return

@@ -1,20 +1,34 @@
-static def getBugfenderApiKeyValue() {
-    Properties properties = new Properties()
-    def bugfenderConfigFile = new File("/Users/enrico/.bugfender.properties")
-    if (!bugfenderConfigFile.exists()) {
-        return "null"
-    }
-    properties.load(new FileInputStream(bugfenderConfigFile))
-    return "\"" + properties.getProperty("bugfenderApiKey") + "\""
+dependencies {
+    implementation 'com.bugfender.sdk:android:1.0.11'
 }
-
 
 android {
     buildTypes.each {
-        it.buildConfigField 'String', 'BUGFENDER_API_KEY', getBugfenderApiKeyValue()
+        it.buildConfigField 'String', 'BUGFENDER_API_KEY', javaLiteralString(getBugfenderApiKey())
     }
 }
 
-dependencies {
-    implementation 'com.bugfender.sdk:android:1.0.11'
+def getBugfenderApiKey() {
+    def localPropsFile = project.rootProject.file('local.properties')
+    if (!localPropsFile.exists()) {
+        println("file $localPropsFile not found, Bugfender is disabled")
+        return null
+    }
+    Properties properties = new Properties()
+    properties.load(localPropsFile.newDataInputStream())
+    def key = "bugfender.apiKey"
+    def value = properties.getProperty(key)
+    if (value == null) {
+        println("no $key found in $localPropsFile, Bugfender is disabled")
+        return null
+    }
+    return value
+}
+
+static def javaLiteralString(value) {
+    if (value == null) {
+        return "null"
+    } else {
+        return "\"$value\""
+    }
 }
