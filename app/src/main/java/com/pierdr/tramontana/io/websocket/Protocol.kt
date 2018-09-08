@@ -23,6 +23,7 @@ class Protocol {
         return when (directive) {
             "makeVibrate" -> Directive.MakeVibrate
             "setColor" -> parseSetColor(json)
+            "transitionColors" -> parseTransitionColors(json)
             "setBrightness" -> Directive.SetBrightness(json.getFloat("b"))
             "setLED" -> Directive.SetLed(json.getFloat("in"))
             "showImage" -> Directive.ShowImage(json.getString("url"))
@@ -43,17 +44,26 @@ class Protocol {
 
     }
 
+    private fun parseTransitionColors(json: JSONObject) = Directive.TransitionColors(
+            json.getFloatColor("r1"),
+            json.getFloatColor("g1"),
+            json.getFloatColor("b1"),
+            json.getFloatColor("a1"),
+            json.getFloatColor("r2"),
+            json.getFloatColor("g2"),
+            json.getFloatColor("b2"),
+            json.getFloatColor("a2"),
+            json.getFloat("duration").toInt()
+    )
+
     private fun parseSetColor(json: JSONObject): Directive.SetColor {
         val colorsAsFloat = json.getString("r").contains(".")
-        System.out.println(colorsAsFloat)
         return if (colorsAsFloat) {
-            fun floatColorToInt(key: String): Int =
-                    PApplet.map(json.getFloat(key), 0.0.toFloat(), 1.0.toFloat(), 0f, 255f).toInt()
             Directive.SetColor(
-                    floatColorToInt("r"),
-                    floatColorToInt("g"),
-                    floatColorToInt("b"),
-                    floatColorToInt("a")
+                    json.getFloatColor("r"),
+                    json.getFloatColor("g"),
+                    json.getFloatColor("b"),
+                    json.getFloatColor("a")
             )
         } else {
             Directive.SetColor(
@@ -64,6 +74,9 @@ class Protocol {
             )
         }
     }
+
+    private fun JSONObject.getFloatColor(key: String): Int =
+            PApplet.map(getFloat(key), 0.0.toFloat(), 1.0.toFloat(), 0f, 255f).toInt()
 
     private fun parseRegisterTouch(json: JSONObject): Directive.RegisterTouch {
         val multi = json.hasKey("multi")

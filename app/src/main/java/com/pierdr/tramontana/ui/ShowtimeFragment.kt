@@ -47,6 +47,7 @@ class ShowtimeFragment : Fragment(), EventSink {
     private val userReporter by lazy { ToastReporter(context!!) }
     private val sensors by lazy { Sensors(applicationContext, eventSink, userReporter) }
     private val sketch by lazy { Sketch(this) }
+    private val brightnessController = BrightnessController(this)
 
     private val videoProxy by lazy {
         HttpProxyCacheServer.Builder(applicationContext)
@@ -67,9 +68,11 @@ class ShowtimeFragment : Fragment(), EventSink {
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         lifecycle.addObserver(sensors)
+        lifecycle.addObserver(brightnessController)
     }
 
     override fun onDetach() {
+        lifecycle.removeObserver(brightnessController)
         lifecycle.removeObserver(sensors)
         super.onDetach()
     }
@@ -101,15 +104,9 @@ class ShowtimeFragment : Fragment(), EventSink {
         Log.d(TAG, "got directive $directive")
         when (directive) {
             is Directive.MakeVibrate -> vibrator.vibrate(100)
-            is Directive.SetColor -> {
-                contentToShow = ContentToShow.SolidColor
-                sketch.setColor(
-                        directive.red,
-                        directive.green,
-                        directive.blue)
-                setBrightness(directive.alpha / 255.0f)
-            }
-            is Directive.SetBrightness -> setBrightness(directive.brightness)
+            is Directive.SetColor -> onSetColor(directive)
+            is Directive.TransitionColors -> onTransitionColors(directive)
+            is Directive.SetBrightness -> onSetBrightness(directive)
             is Directive.SetLed -> setFlashLight(directive.intensity)
             is Directive.ShowImage -> onShowImage(directive)
             is Directive.PlayVideo -> onPlayVideo(directive)
@@ -124,6 +121,33 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.RegisterMagnetometer -> sensors.startSensor(Sensors.Type.MAGNETOMETER, directive.updateRate.toMicros())
             is Directive.ReleaseMagnetometer -> sensors.stopSensor(Sensors.Type.MAGNETOMETER)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
+    }
+
+    private fun onSetColor(directive: Directive.SetColor) {
+        contentToShow = ContentToShow.SolidColor
+        sketch.setColor(directive.red, directive.green, directive.blue)
+        brightnessController.set(directive.alpha / 255.0f)
+    }
+
+    private fun onSetBrightness(directive: Directive.SetBrightness) {
+        brightnessController.set(directive.brightness)
+    }
+
+    private fun onTransitionColors(directive: Directive.TransitionColors) {
+        contentToShow = ContentToShow.SolidColor
+        sketch.transitionColors(
+                directive.fromRed,
+                directive.fromGreen,
+                directive.fromBlue,
+                directive.toRed,
+                directive.toGreen,
+                directive.toBlue,
+                directive.duration
+        )
+        brightnessController.fade(
+                directive.fromAlpha / 255.0f,
+                directive.toAlpha / 255.0f,
+                directive.duration)
     }
 
     private fun Float.toMicros() = (1_000_000 / this).toInt()
@@ -150,13 +174,6 @@ class ShowtimeFragment : Fragment(), EventSink {
         }
         val proxyUrl = videoProxy.getProxyUrl(url)
         video.setVideoPath(proxyUrl)
-    }
-
-    private fun setBrightness(brightness: Float) {
-        val window = activity?.window ?: throw IllegalStateException("setBrightness on no activity")
-        val lp = window.attributes
-        lp?.screenBrightness = brightness
-        window.attributes = lp
     }
 
     private fun setFlashLight(value: Float) {

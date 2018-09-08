@@ -16,6 +16,18 @@ sealed class Directive {
             val alpha: Int
     ) : Directive()
 
+    data class TransitionColors(
+            val fromRed: Int,
+            val fromGreen: Int,
+            val fromBlue: Int,
+            val fromAlpha: Int,
+            val toRed: Int,
+            val toGreen: Int,
+            val toBlue: Int,
+            val toAlpha: Int,
+            val duration: Int
+    ) : Directive()
+
     data class SetBrightness(
             val brightness: Float
     ) : Directive()
