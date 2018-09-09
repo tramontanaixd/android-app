@@ -70,30 +70,5 @@ sealed class Directive {
     ) : Directive()
 
     object ReleaseMagnetometer : Directive()
-
-    // TODO directive pulseLED
-    /*IT WORKS AS FOLLOW:
-        receives 3 parameters:
-        1. duration
-        2. times
-        3. intensity
-
-        The incoming message is:
-        "{\"m\":\"pulseLED\",\"t\":\""+numberOfPulses+"\",\"d\":\""+duration+"\",\"i\":\""+intensity+"\"}"
-        The method might be something like:
-
-        onPulseFlashLight(json.getFloat("t"),json.getFloat("i"),json.getFloat("d"));
-
-    */
-    // TODO directive loopVideo
-    // TODO directive getBattery
-    //RETURNS A MESSAGE LIKE
-    // "{\"m\":\"battery\",\"v\":\"0.05\"}"
-    // TODO directive playAudio
-    // TODO directive registerPowerSource
-    // TODO directive releasePowerSource
-    // TODO directive registerAudioJack
-    // TODO directive releaseAudioJack
-
 }
 
