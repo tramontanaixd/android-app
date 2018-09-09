@@ -8,9 +8,11 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.UserReporter
+import java.util.*
 import kotlin.reflect.KClass
 
 class Sensors(
@@ -18,12 +20,10 @@ class Sensors(
         eventSink: EventSink,
         private val userReporter: UserReporter
 ) : LifecycleObserver {
-    private val tag = "Sensors"
-
     private val availableSensors: Map<KClass<out TramontanaSensor>, TramontanaSensor>
 
     init {
-        val allSensors = listOf(
+        val allSensors: List<TramontanaSensor> = listOf(
                 Proximity(eventSink, applicationContext),
                 Attitude(eventSink, applicationContext),
                 Orientation(eventSink, applicationContext),
@@ -103,9 +103,56 @@ class Attitude(eventSink: EventSink, applicationContext: Context) : SimpleAndroi
     }
 }
 
-class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ORIENTATION) {
-    override fun onSensorChanged(event: SensorEvent?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+class Orientation(eventSink: EventSink, applicationContext: Context) : TramontanaSensor(eventSink), SensorEventListener {
+    private val tag = "Orientation"
+    private val rotationMatrix = FloatArray(16)
+    private val inclinationMatrix = FloatArray(9)
+    private val orientationVector = FloatArray(3)
+
+    private val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val geomagnetic = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+    private val sensors = listOf(accelerometer, geomagnetic)
+    private val lastValues: MutableMap<Sensor, FloatArray> = HashMap()
+
+    override val isAvailable: Boolean
+        get() = sensors.all { it != null }
+
+    override fun start(samplingPeriodUs: Int) {
+        if (isRunning) return
+        sensors.forEach {
+            sensorManager.registerListener(this, it, samplingPeriodUs)
+        }
+        isRunning = true
+    }
+
+    override var isRunning = false
+
+    override fun stop() {
+        if (!isRunning) return
+        sensors.forEach {
+            sensorManager.unregisterListener(this, it)
+        }
+        isRunning = false
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        lastValues[event.sensor] = event.values
+
+        if (lastValues.size != sensors.size) return
+
+        val computeSuccess = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, lastValues[accelerometer], lastValues[geomagnetic])
+        if (!computeSuccess) {
+            Log.w(tag, "failed to compute rotation matrix")
+            return
+        }
+
+        SensorManager.getOrientation(rotationMatrix, orientationVector)
+        Log.v(tag, "orientation: ${Arrays.toString(orientationVector)}")
+
+        // TODO determine "gross" orientation and send event
     }
 }
 

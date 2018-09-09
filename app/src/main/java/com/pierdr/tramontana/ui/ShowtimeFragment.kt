@@ -116,7 +116,7 @@ class ShowtimeFragment : Fragment(), EventSink {
             is Directive.ReleaseDistance -> sensors.stopSensor(Proximity::class)
             is Directive.RegisterAttitude -> sensors.startSensor(Attitude::class, directive.updateRate.toMicros())
             is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
-            is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class, directive.updateRate.toMicros())
+            is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class)
             is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
             is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
             is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)

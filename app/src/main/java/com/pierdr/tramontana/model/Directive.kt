@@ -55,9 +55,7 @@ sealed class Directive {
 
     object ReleaseDistance : Directive()
 
-    data class RegisterOrientation(
-            val updateRate: Float
-    ) : Directive()
+    object RegisterOrientation : Directive()
 
     object ReleaseOrientation : Directive()
 
