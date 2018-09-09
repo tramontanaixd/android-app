@@ -20,6 +20,7 @@ class Sensors(
         eventSink: EventSink,
         private val userReporter: UserReporter
 ) : LifecycleObserver {
+    private val tag = "Sensors"
     private val availableSensors: Map<KClass<out TramontanaSensor>, TramontanaSensor>
 
     init {
@@ -36,6 +37,7 @@ class Sensors(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun unregisterAllSensors() {
+        Log.d(tag, "unregisterAllSensors()")
         availableSensors.values.forEach { it.stop() }
     }
 
@@ -123,10 +125,12 @@ class Attitude(eventSink: EventSink, applicationContext: Context) : TramontanaSe
     override var isRunning = false
 
     override fun stop() {
+        Log.d(tag, "stop() called")
         if (!isRunning) return
         sensors.forEach {
             sensorManager.unregisterListener(this, it)
         }
+        Log.d(tag, "stop() sensors unregistered")
         isRunning = false
     }
 

@@ -1,10 +1,7 @@
 package com.pierdr.tramontana.io.websocket
 
 import android.util.Log
-import com.pierdr.tramontana.model.ClientSession
-import com.pierdr.tramontana.model.Directive
-import com.pierdr.tramontana.model.Event
-import com.pierdr.tramontana.model.Server
+import com.pierdr.tramontana.model.*
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -12,6 +9,7 @@ import kotlinx.coroutines.experimental.launch
 import org.java_websocket.WebSocket
 import org.java_websocket.WebSocketImpl
 import org.java_websocket.drafts.Draft_6455
+import org.java_websocket.exceptions.WebsocketNotConnectedException
 import org.java_websocket.handshake.ClientHandshake
 import java.lang.Exception
 import java.net.InetSocketAddress
@@ -118,8 +116,17 @@ class WebSocketClientSession(
     val directivesChannel = Channel<Directive>()
 
     override fun sendEvent(event: Event) {
+        if (connection.isClosing || connection.isClosed || isClosed()) {
+            Log.i(TAG, "connection is closed, discarding event $event")
+            return
+        }
         val message = protocol.emit(event)
-        connection.send(message)
+        try {
+            connection.send(message)
+        }
+        catch (e: WebsocketNotConnectedException) {
+            Log.w(TAG, "WebsocketNotConnectedException while trying to send event in a seemingly active connection $connection")
+        }
     }
 
     override fun produceDirectives(): ReceiveChannel<Directive> = directivesChannel

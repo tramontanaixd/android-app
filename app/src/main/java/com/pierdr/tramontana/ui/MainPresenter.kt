@@ -52,8 +52,12 @@ class MainPresenter(
     }
 
     override fun onEvent(event: Event) {
-        currentSession?.sendEvent(event)
-                ?: throw IllegalStateException("got event with no session: $event")
+        val session = currentSession
+        if (session == null) {
+            Log.i(TAG, "discarding event when there's no session: $event")
+            return
+        }
+        session.sendEvent(event)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
