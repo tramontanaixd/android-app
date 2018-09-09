@@ -97,13 +97,7 @@ class Proximity(eventSink: EventSink, applicationContext: Context) : SimpleAndro
     }
 }
 
-class Attitude(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ROTATION_VECTOR) {
-    override fun onSensorChanged(event: SensorEvent) {
-        eventSink.onEvent(Event.Attitude(event.values[0], event.values[1], event.values[2]))
-    }
-}
-
-class Orientation(eventSink: EventSink, applicationContext: Context) : TramontanaSensor(eventSink), SensorEventListener {
+class Attitude(eventSink: EventSink, applicationContext: Context) : TramontanaSensor(eventSink), SensorEventListener {
     private val tag = "Orientation"
     private val rotationMatrix = FloatArray(16)
     private val inclinationMatrix = FloatArray(9)
@@ -111,8 +105,8 @@ class Orientation(eventSink: EventSink, applicationContext: Context) : Tramontan
 
     private val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    private val geomagnetic = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
-    private val sensors = listOf(accelerometer, geomagnetic)
+    private val magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+    private val sensors = listOf(accelerometer, magneticField)
     private val lastValues: MutableMap<Sensor, FloatArray> = HashMap()
 
     override val isAvailable: Boolean
@@ -139,20 +133,51 @@ class Orientation(eventSink: EventSink, applicationContext: Context) : Tramontan
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
 
     override fun onSensorChanged(event: SensorEvent) {
-        lastValues[event.sensor] = event.values
+        lastValues[event.sensor] = event.values.clone()
 
         if (lastValues.size != sensors.size) return
 
-        val computeSuccess = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, lastValues[accelerometer], lastValues[geomagnetic])
+        val computeSuccess = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, lastValues[accelerometer], lastValues[magneticField])
         if (!computeSuccess) {
             Log.w(tag, "failed to compute rotation matrix")
             return
         }
 
         SensorManager.getOrientation(rotationMatrix, orientationVector)
-        Log.v(tag, "orientation: ${Arrays.toString(orientationVector)}")
 
-        // TODO determine "gross" orientation and send event
+        val yaw = orientationVector[0]
+        val pitch = orientationVector[1]
+        val roll = orientationVector[2]
+        eventSink.onEvent(Event.Attitude(roll, pitch, yaw))
+    }
+}
+
+const val HALF_GRAVITY = SensorManager.GRAVITY_EARTH / 2
+
+class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ACCELEROMETER) {
+    private val tag = "Orientation"
+    private var lastDirection: Event.Orientation.Direction? = null
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+        val direction = when {
+            z > HALF_GRAVITY -> Event.Orientation.Direction.FACING_UP
+            z < -HALF_GRAVITY -> Event.Orientation.Direction.FACING_DOWN
+            y > HALF_GRAVITY -> Event.Orientation.Direction.PORTRAIT
+            y < -HALF_GRAVITY -> Event.Orientation.Direction.PORTRAIT_UPSIDE_DOWN
+            x > HALF_GRAVITY -> Event.Orientation.Direction.LANDSCAPE_LEFT
+            x < -HALF_GRAVITY -> Event.Orientation.Direction.LANDSCAPE_RIGHT
+            else -> {
+                Log.w(tag, String.format("unable to compute orientation: x %-5.3f y %-5.3f z %-5.3f", x, y, z))
+                null
+            }
+        } ?: return
+        if (direction != lastDirection) {
+            eventSink.onEvent(Event.Orientation(direction))
+            lastDirection = direction
+        }
     }
 }
 

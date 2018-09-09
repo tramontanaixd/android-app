@@ -52,7 +52,6 @@ class MainPresenter(
     }
 
     override fun onEvent(event: Event) {
-        Log.v(TAG, "got event $event")
         currentSession?.sendEvent(event)
                 ?: throw IllegalStateException("got event with no session: $event")
     }

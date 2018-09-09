@@ -34,6 +34,19 @@ sealed class Event {
             val yaw: Float
     ) : Event()
 
+    data class Orientation(
+            val orientation: Direction
+    ) : Event() {
+        enum class Direction {
+            PORTRAIT,
+            PORTRAIT_UPSIDE_DOWN,
+            LANDSCAPE_LEFT,
+            LANDSCAPE_RIGHT,
+            FACING_UP,
+            FACING_DOWN
+        }
+    }
+
     data class Distance(
             val distance: Float
     ) : Event()

@@ -119,7 +119,6 @@ class WebSocketClientSession(
 
     override fun sendEvent(event: Event) {
         val message = protocol.emit(event)
-        Log.v(TAG, "sending message $message")
         connection.send(message)
     }
 

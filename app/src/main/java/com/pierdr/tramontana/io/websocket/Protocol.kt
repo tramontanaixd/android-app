@@ -122,6 +122,11 @@ class Protocol {
                     .setString("p", "${event.pitch}")
                     .setString("y", "${event.yaw}")
         }
+        is Event.Orientation -> {
+            JSONObject()
+                    .setString("m", "orientationChanged")
+                    .setString("value", "${event.orientation.toIndex()}")
+        }
         is Event.Distance -> {
             JSONObject()
                     .setString("m", "distanceChanged")
@@ -143,4 +148,13 @@ class Protocol {
                     append(JSONObject().setXyMembers(it.x, it.y))
                 }
             })
+
+    private fun Event.Orientation.Direction.toIndex() = when(this) {
+        Event.Orientation.Direction.PORTRAIT -> 0
+        Event.Orientation.Direction.PORTRAIT_UPSIDE_DOWN -> 1
+        Event.Orientation.Direction.LANDSCAPE_LEFT -> 2
+        Event.Orientation.Direction.LANDSCAPE_RIGHT -> 3
+        Event.Orientation.Direction.FACING_UP -> 4
+        Event.Orientation.Direction.FACING_DOWN -> 5
+    }
 }
