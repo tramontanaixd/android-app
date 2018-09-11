@@ -5,19 +5,17 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
-import com.pierdr.tramontana.io.websocket.WebsocketServer
 import com.pierdr.tramontana.model.ClientSession
-import com.pierdr.tramontana.model.Event
-import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
 import kotlinx.coroutines.experimental.launch
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 
 
-class MainPresenter : LifecycleObserver, EventSink {
+class MainPresenter : LifecycleObserver, KoinComponent {
 
     private val TAG = javaClass.simpleName
-    private var currentServer: Server? = null
-    private var currentSession: ClientSession? = null
+    private val server: Server by inject()
     private var view: MainView? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -25,8 +23,6 @@ class MainPresenter : LifecycleObserver, EventSink {
         view = owner as MainView
         view?.showReadyFragment()
 
-        val server: Server = WebsocketServer()
-        currentServer = server
         server.start()
         Log.d(TAG, "waiting for client sessions")
         for (clientSession in server.produceClientSessions()) {
@@ -37,34 +33,22 @@ class MainPresenter : LifecycleObserver, EventSink {
 
     private fun handleClientSession(session: ClientSession) {
         Log.i(TAG, "got client session $session")
-        currentSession = session
         view?.showShowtimeFragment() ?: return
 
         launch {
             Log.d(TAG, "waiting for directives")
-            for (directive in session.produceDirectives()) {
-                view?.runDirective(directive) ?: break
+            val directiveSubscription = session.subscribeToDirectives()
+            for (directive in directiveSubscription) {
+                // just wait for the channel to close, to show the ready fragment again
             }
             Log.d(TAG, "session or view closed")
-            currentSession = null
             view?.showReadyFragment()
         }
 
     }
 
-    override fun onEvent(event: Event) {
-        val session = currentSession
-        if (session == null) {
-            Log.i(TAG, "discarding event when there's no session: $event")
-            return
-        }
-        session.sendEvent(event)
-    }
-
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun stop() {
-        currentServer?.stop()
-                ?: throw IllegalStateException("stop() with no current server")
-        currentServer = null
+        server.stop()
     }
 }

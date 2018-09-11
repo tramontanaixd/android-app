@@ -1,5 +1,8 @@
 package com.pierdr.tramontana.ui
 
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.hardware.camera2.CameraManager
 import android.os.Build
@@ -16,10 +19,14 @@ import com.pierdr.tramontana.io.*
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
+import com.pierdr.tramontana.model.Server
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_showtime.*
 import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
 import kotlinx.coroutines.experimental.launch
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 import processing.android.PFragment
 import java.io.File
 
@@ -27,10 +34,8 @@ import java.io.File
  * Fragment to show when there's an active connection.
  *
  * Shows the Processing sketch by default; images and videos are handled outside the sketch.
- *
- * A user of this fragment *must* call set the [eventSink] before attaching it via a FragmentManager.
  */
-class ShowtimeFragment : Fragment(), EventSink {
+class ShowtimeFragment : Fragment(), KoinComponent {
     private val TAG = javaClass.simpleName
 
     private enum class ContentToShow {
@@ -42,11 +47,12 @@ class ShowtimeFragment : Fragment(), EventSink {
     private val applicationContext: Context
         get() = context!!.applicationContext
 
+    private val presenter = ShowtimePresenter()
     private val vibrator by lazy { applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
     private val userReporter by lazy { ToastReporter(context!!) }
-    private val sensors by lazy { Sensors(applicationContext, eventSink, userReporter) }
-    private val sketch by lazy { Sketch(this) }
+    private val sensors by lazy { Sensors(applicationContext, presenter, userReporter) }
+    private val sketch by lazy { Sketch(presenter) }
     private val brightnessController = BrightnessController(this)
 
     private val videoProxy by lazy {
@@ -55,8 +61,6 @@ class ShowtimeFragment : Fragment(), EventSink {
                 .build()
     }
 
-    lateinit var eventSink: EventSink
-
     private var contentToShow: ContentToShow = ContentToShow.SolidColor
         set(value) {
             Log.d(TAG, "set contentToShow current=$field new=$value")
@@ -64,6 +68,10 @@ class ShowtimeFragment : Fragment(), EventSink {
             video.visibility = if (value == ContentToShow.Video) View.VISIBLE else View.INVISIBLE
             field = value
         }
+
+    init {
+        lifecycle.addObserver(presenter)
+    }
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -87,10 +95,6 @@ class ShowtimeFragment : Fragment(), EventSink {
         childFragmentManager.beginTransaction()
                 .add(R.id.sketch_container, PFragment(sketch))
                 .commit()
-    }
-
-    override fun onEvent(event: Event) {
-        eventSink.onEvent(event)
     }
 
     fun runDirective(directive: Directive) {
@@ -170,7 +174,7 @@ class ShowtimeFragment : Fragment(), EventSink {
             video.start()
         }
         video.setOnCompletionListener {
-            eventSink.onEvent(Event.VideoEnded)
+            presenter.onEvent(Event.VideoEnded)
         }
         val proxyUrl = videoProxy.getProxyUrl(url)
         video.setVideoPath(proxyUrl)
@@ -183,6 +187,38 @@ class ShowtimeFragment : Fragment(), EventSink {
         } else {
             val cameraId: String = cameraManager.cameraIdList[0]
             cameraManager.setTorchMode(cameraId, value > 0)
+        }
+    }
+
+    // TODO move sensors, vibrator etc. here
+    // TODO move runDirectiveOnUiThread here
+    // TODO make this non-inner
+    inner class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
+        private val tag = "DirectiveListener"
+        private val server: Server by inject()
+        private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        fun onStart() {
+            launch {
+                Log.d(tag, "waiting for directives")
+                // TODO handle no-current-session
+                val subscription = server.currentClientSession!!.subscribeToDirectives()
+                directivesSubscription = subscription
+                for (directive in subscription) {
+                    runDirective(directive)
+                }
+                Log.d(tag, "no more directives")
+            }
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        fun onStop() {
+            directivesSubscription?.close()
+        }
+
+        override fun onEvent(event: Event) {
+            server.currentClientSession?.sendEvent(event)
         }
     }
 }

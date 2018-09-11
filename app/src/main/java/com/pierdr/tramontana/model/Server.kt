@@ -24,4 +24,9 @@ interface Server {
      * is stopped.
      */
     fun produceClientSessions(): ReceiveChannel<ClientSession>
+
+    /**
+     * Returns the current [ClientSession], or null if there's no current session.
+     */
+    val currentClientSession: ClientSession?
 }

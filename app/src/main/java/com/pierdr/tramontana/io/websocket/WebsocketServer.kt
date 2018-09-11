@@ -1,9 +1,13 @@
 package com.pierdr.tramontana.io.websocket
 
 import android.util.Log
-import com.pierdr.tramontana.model.*
-import kotlinx.coroutines.experimental.channels.Channel
+import com.pierdr.tramontana.model.ClientSession
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.Server
+import kotlinx.coroutines.experimental.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.launch
 import org.java_websocket.WebSocket
@@ -19,6 +23,10 @@ class WebsocketServer : Server {
     private val TAG = javaClass.simpleName
     private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
     private val protocol = Protocol()
+
+    private var currentSession: WebSocketClientSession? = null
+    override val currentClientSession: ClientSession?
+        get() = currentSession
 
     /**
      * Starts the server.
@@ -66,7 +74,6 @@ class WebsocketServer : Server {
     override fun produceClientSessions() = produce<ClientSession> {
         suspendCoroutine<Unit> { sessionsContinuation ->
             websocketServer.attachBehavior(object : WebSocketServerBehavior() {
-                private var currentSession: WebSocketClientSession? = null
                 override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
                     Log.i(TAG, "onOpen $conn")
                     if (currentSession != null) throw IllegalStateException("multiple connections are not supported")
@@ -113,10 +120,10 @@ class WebSocketClientSession(
     private val TAG = javaClass.simpleName
     private val protocol = Protocol()
 
-    val directivesChannel = Channel<Directive>()
+    val directivesChannel = ConflatedBroadcastChannel<Directive>()
 
     override fun sendEvent(event: Event) {
-        if (connection.isClosing || connection.isClosed || isClosed()) {
+        if (isClosed) {
             Log.i(TAG, "connection is closed, discarding event $event")
             return
         }
@@ -129,10 +136,12 @@ class WebSocketClientSession(
         }
     }
 
-    override fun produceDirectives(): ReceiveChannel<Directive> = directivesChannel
+    override fun subscribeToDirectives(): SubscriptionReceiveChannel<Directive> = directivesChannel.openSubscription()
 
     override fun close() {
         connection.close()
     }
 
+    override val isClosed: Boolean
+        get() = connection.isClosing || connection.isClosed || directivesChannel.isClosedForSend
 }
