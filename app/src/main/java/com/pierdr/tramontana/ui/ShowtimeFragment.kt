@@ -4,8 +4,6 @@ import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
-import android.hardware.camera2.CameraManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
 import android.support.v4.app.Fragment
@@ -28,7 +26,6 @@ import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import processing.android.PFragment
-import java.io.File
 
 /**
  * Fragment to show when there's an active connection.
@@ -44,21 +41,10 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         Video
     }
 
-    private val applicationContext: Context
-        get() = context!!.applicationContext
-
     private val presenter = ShowtimePresenter()
-    private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
-    private val userReporter by lazy { ToastReporter(context!!) }
     private val sketch by lazy { Sketch(presenter) }
     private val brightnessController = BrightnessController(this)
-
-    // TODO let Koin build it
-    private val videoProxy by lazy {
-        HttpProxyCacheServer.Builder(applicationContext)
-                .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
-                .build()
-    }
+    private val videoProxy: HttpProxyCacheServer by inject()
 
     private var contentToShow: ContentToShow = ContentToShow.SolidColor
         set(value) {
@@ -147,23 +133,13 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         video.setVideoPath(proxyUrl)
     }
 
-    private fun setFlashLight(value: Float) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            userReporter.showWarning("Camera not available, unable to set flashlight")
-            return
-        } else {
-            val cameraId: String = cameraManager.cameraIdList[0]
-            cameraManager.setTorchMode(cameraId, value > 0)
-        }
-    }
-
-    // TODO move cameraManager/flashlight here
     // TODO make this non-inner
     inner class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
         private val tag = "DirectiveListener"
         private val server: Server by inject()
         private val sensors: Sensors by inject()
         private val vibrator: Vibrator by inject()
+        private val flashlight: Flashlight by inject()
         private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
 
         @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -198,7 +174,7 @@ class ShowtimeFragment : Fragment(), KoinComponent {
                 is Directive.SetColor -> onSetColor(directive)
                 is Directive.TransitionColors -> onTransitionColors(directive)
                 is Directive.SetBrightness -> onSetBrightness(directive)
-                is Directive.SetLed -> setFlashLight(directive.intensity)
+                is Directive.SetLed -> flashlight.set(directive.intensity)
                 is Directive.ShowImage -> onShowImage(directive)
                 is Directive.PlayVideo -> onPlayVideo(directive)
                 is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)

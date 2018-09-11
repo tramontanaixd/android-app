@@ -2,8 +2,10 @@ package com.pierdr.tramontana
 
 import android.app.Application
 import android.content.Context
+import android.hardware.camera2.CameraManager
 import android.os.Vibrator
 import com.bugfender.sdk.Bugfender
+import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.BuildConfig
 import com.pierdr.tramontana.io.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
@@ -13,6 +15,7 @@ import com.pierdr.tramontana.ui.MainPresenter
 import com.pierdr.tramontana.ui.ToastReporter
 import org.koin.android.ext.android.startKoin
 import org.koin.dsl.module.module
+import java.io.File
 
 class App : Application() {
     override fun onCreate() {
@@ -37,6 +40,7 @@ class App : Application() {
 
 fun appModule() = module {
     single { get<Context>().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
+    single { get<Context>().getSystemService(Context.CAMERA_SERVICE) as CameraManager }
 
     single { MainPresenter() }
 
@@ -45,4 +49,11 @@ fun appModule() = module {
     single<UserReporter> { ToastReporter(get()) }
 
     single { Sensors() }
+
+    single {
+        val applicationContext = get<Context>()
+        HttpProxyCacheServer.Builder(applicationContext)
+                .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
+                .build()
+    }
 }
