@@ -1,8 +1,6 @@
 package com.pierdr.tramontana.io
 
-import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -11,17 +9,25 @@ import android.hardware.SensorManager
 import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
+import com.pierdr.tramontana.model.Server
 import com.pierdr.tramontana.model.UserReporter
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 import java.util.*
 import kotlin.reflect.KClass
 
-class Sensors(
-        applicationContext: Context,
-        eventSink: EventSink,
-        private val userReporter: UserReporter
-) : LifecycleObserver {
+class Sensors : LifecycleObserver, KoinComponent {
     private val tag = "Sensors"
+    private val applicationContext: Context by inject()
+    private val userReporter: UserReporter by inject()
+    private val server: Server by inject()
     private val availableSensors: Map<KClass<out TramontanaSensor>, TramontanaSensor>
+
+    private val eventSink = object : EventSink {
+        override fun onEvent(event: Event) {
+            server.currentClientSession?.sendEvent(event)
+        }
+    }
 
     init {
         val allSensors: List<TramontanaSensor> = listOf(
@@ -35,8 +41,7 @@ class Sensors(
                 .associateBy { it::class }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun unregisterAllSensors() {
+    fun stopAll() {
         Log.d(tag, "unregisterAllSensors()")
         availableSensors.values.forEach { it.stop() }
     }

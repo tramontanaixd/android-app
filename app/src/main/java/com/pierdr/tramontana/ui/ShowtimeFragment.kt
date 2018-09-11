@@ -48,13 +48,12 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         get() = context!!.applicationContext
 
     private val presenter = ShowtimePresenter()
-    private val vibrator by lazy { applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val cameraManager by lazy { applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager }
     private val userReporter by lazy { ToastReporter(context!!) }
-    private val sensors by lazy { Sensors(applicationContext, presenter, userReporter) }
     private val sketch by lazy { Sketch(presenter) }
     private val brightnessController = BrightnessController(this)
 
+    // TODO let Koin build it
     private val videoProxy by lazy {
         HttpProxyCacheServer.Builder(applicationContext)
                 .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
@@ -75,13 +74,11 @@ class ShowtimeFragment : Fragment(), KoinComponent {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        lifecycle.addObserver(sensors)
         lifecycle.addObserver(brightnessController)
     }
 
     override fun onDetach() {
         lifecycle.removeObserver(brightnessController)
-        lifecycle.removeObserver(sensors)
         super.onDetach()
     }
 
@@ -95,36 +92,6 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         childFragmentManager.beginTransaction()
                 .add(R.id.sketch_container, PFragment(sketch))
                 .commit()
-    }
-
-    fun runDirective(directive: Directive) {
-        Log.v(TAG, "would run directive $directive")
-        launch(UI) {
-            runDirectiveOnUiThread(directive)
-        }
-    }
-
-    private fun runDirectiveOnUiThread(directive: Directive) {
-        Log.d(TAG, "got directive $directive")
-        when (directive) {
-            is Directive.MakeVibrate -> vibrator.vibrate(100)
-            is Directive.SetColor -> onSetColor(directive)
-            is Directive.TransitionColors -> onTransitionColors(directive)
-            is Directive.SetBrightness -> onSetBrightness(directive)
-            is Directive.SetLed -> setFlashLight(directive.intensity)
-            is Directive.ShowImage -> onShowImage(directive)
-            is Directive.PlayVideo -> onPlayVideo(directive)
-            is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
-            is Directive.ReleaseTouch -> sketch.stopTouchListening()
-            is Directive.RegisterDistance -> sensors.startSensor(Proximity::class)
-            is Directive.ReleaseDistance -> sensors.stopSensor(Proximity::class)
-            is Directive.RegisterAttitude -> sensors.startSensor(Attitude::class, directive.updateRate.toMicros())
-            is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
-            is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class)
-            is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
-            is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
-            is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
-        }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 
     private fun onSetColor(directive: Directive.SetColor) {
@@ -190,12 +157,13 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         }
     }
 
-    // TODO move sensors, vibrator etc. here
-    // TODO move runDirectiveOnUiThread here
+    // TODO move cameraManager/flashlight here
     // TODO make this non-inner
     inner class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
         private val tag = "DirectiveListener"
         private val server: Server by inject()
+        private val sensors: Sensors by inject()
+        private val vibrator: Vibrator by inject()
         private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
 
         @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -206,7 +174,9 @@ class ShowtimeFragment : Fragment(), KoinComponent {
                 val subscription = server.currentClientSession!!.subscribeToDirectives()
                 directivesSubscription = subscription
                 for (directive in subscription) {
-                    runDirective(directive)
+                    launch(UI) {
+                        runDirectiveOnUiThread(directive)
+                    }
                 }
                 Log.d(tag, "no more directives")
             }
@@ -215,10 +185,34 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
         fun onStop() {
             directivesSubscription?.close()
+            sensors.stopAll()
         }
 
         override fun onEvent(event: Event) {
             server.currentClientSession?.sendEvent(event)
         }
+
+        private fun runDirectiveOnUiThread(directive: Directive) {
+            when (directive) {
+                is Directive.MakeVibrate -> vibrator.vibrate(100)
+                is Directive.SetColor -> onSetColor(directive)
+                is Directive.TransitionColors -> onTransitionColors(directive)
+                is Directive.SetBrightness -> onSetBrightness(directive)
+                is Directive.SetLed -> setFlashLight(directive.intensity)
+                is Directive.ShowImage -> onShowImage(directive)
+                is Directive.PlayVideo -> onPlayVideo(directive)
+                is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
+                is Directive.ReleaseTouch -> sketch.stopTouchListening()
+                is Directive.RegisterDistance -> sensors.startSensor(Proximity::class)
+                is Directive.ReleaseDistance -> sensors.stopSensor(Proximity::class)
+                is Directive.RegisterAttitude -> sensors.startSensor(Attitude::class, directive.updateRate.toMicros())
+                is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
+                is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class)
+                is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
+                is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
+                is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
+            }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
+        }
+
     }
 }
