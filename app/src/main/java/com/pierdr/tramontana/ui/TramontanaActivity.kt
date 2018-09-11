@@ -1,17 +1,17 @@
 package com.pierdr.tramontana.ui
 
+import android.arch.lifecycle.LifecycleOwner
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.tramontana.model.Directive
+import org.koin.android.ext.android.inject
 
 private const val READY_TAG = "ready"
 private const val SHOWTIME_TAG = "showtime"
 
 class TramontanaActivity : AppCompatActivity(), MainView {
-    private val TAG = javaClass.simpleName
-
-    private val presenter = MainPresenter(this)
+    private val presenter: MainPresenter by inject()
 
     init {
         lifecycle.addObserver(presenter)
@@ -50,7 +50,7 @@ class TramontanaActivity : AppCompatActivity(), MainView {
     }
 }
 
-interface MainView {
+interface MainView : LifecycleOwner {
     fun showReadyFragment()
     fun showShowtimeFragment()
     fun runDirective(directive: Directive)

@@ -2,6 +2,7 @@ package com.pierdr.tramontana.ui
 
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
 import com.pierdr.tramontana.io.websocket.WebsocketServer
@@ -12,17 +13,17 @@ import com.pierdr.tramontana.model.Server
 import kotlinx.coroutines.experimental.launch
 
 
-class MainPresenter(
-        private val view: MainView
-) : LifecycleObserver, EventSink {
+class MainPresenter : LifecycleObserver, EventSink {
 
     private val TAG = javaClass.simpleName
     private var currentServer: Server? = null
     private var currentSession: ClientSession? = null
+    private var view: MainView? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun start() = launch {
-        view.showReadyFragment()
+    fun start(owner: LifecycleOwner) = launch {
+        view = owner as MainView
+        view?.showReadyFragment()
 
         val server: Server = WebsocketServer()
         currentServer = server
@@ -37,16 +38,16 @@ class MainPresenter(
     private fun handleClientSession(session: ClientSession) {
         Log.i(TAG, "got client session $session")
         currentSession = session
-        view.showShowtimeFragment()
+        view?.showShowtimeFragment() ?: return
 
         launch {
             Log.d(TAG, "waiting for directives")
             for (directive in session.produceDirectives()) {
-                view.runDirective(directive)
+                view?.runDirective(directive) ?: break
             }
-            Log.d(TAG, "session closed, no more directives")
+            Log.d(TAG, "session or view closed")
             currentSession = null
-            view.showReadyFragment()
+            view?.showReadyFragment()
         }
 
     }
