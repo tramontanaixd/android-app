@@ -1,11 +1,7 @@
 package com.pierdr.tramontana.ui
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.os.Bundle
-import android.os.Vibrator
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,16 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
-import com.pierdr.tramontana.io.*
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
-import com.pierdr.tramontana.model.EventSink
-import com.pierdr.tramontana.model.Server
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_showtime.*
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
-import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import processing.android.PFragment
@@ -32,7 +22,7 @@ import processing.android.PFragment
  *
  * Shows the Processing sketch by default; images and videos are handled outside the sketch.
  */
-class ShowtimeFragment : Fragment(), KoinComponent {
+class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
     private val TAG = javaClass.simpleName
 
     private enum class ContentToShow {
@@ -80,17 +70,17 @@ class ShowtimeFragment : Fragment(), KoinComponent {
                 .commit()
     }
 
-    private fun onSetColor(directive: Directive.SetColor) {
+    override fun setColor(directive: Directive.SetColor) {
         contentToShow = ContentToShow.SolidColor
         sketch.setColor(directive.red, directive.green, directive.blue)
         brightnessController.set(directive.alpha / 255.0f)
     }
 
-    private fun onSetBrightness(directive: Directive.SetBrightness) {
+    override fun setBrightness(directive: Directive.SetBrightness) {
         brightnessController.set(directive.brightness)
     }
 
-    private fun onTransitionColors(directive: Directive.TransitionColors) {
+    override fun transitionColors(directive: Directive.TransitionColors) {
         contentToShow = ContentToShow.SolidColor
         sketch.transitionColors(
                 directive.fromRed,
@@ -107,16 +97,14 @@ class ShowtimeFragment : Fragment(), KoinComponent {
                 directive.duration)
     }
 
-    private fun Float.toMicros() = (1_000_000 / this).toInt()
-
-    private fun onShowImage(directive: Directive.ShowImage) {
+    override fun showImage(directive: Directive.ShowImage) {
         contentToShow = ContentToShow.Image
         Picasso.get()
                 .load(directive.url)
                 .into(image)
     }
 
-    private fun onPlayVideo(directive: Directive.PlayVideo) {
+    override fun playVideo(directive: Directive.PlayVideo) {
         val url = directive.url
 
         video.setZOrderOnTop(true)
@@ -133,62 +121,17 @@ class ShowtimeFragment : Fragment(), KoinComponent {
         video.setVideoPath(proxyUrl)
     }
 
-    // TODO make this non-inner
-    inner class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
-        private val tag = "DirectiveListener"
-        private val server: Server by inject()
-        private val sensors: Sensors by inject()
-        private val vibrator: Vibrator by inject()
-        private val flashlight: Flashlight by inject()
-        private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        fun onStart() {
-            launch {
-                Log.d(tag, "waiting for directives")
-                // TODO handle no-current-session
-                val subscription = server.currentClientSession!!.subscribeToDirectives()
-                directivesSubscription = subscription
-                for (directive in subscription) {
-                    launch(UI) {
-                        runDirectiveOnUiThread(directive)
-                    }
-                }
-                Log.d(tag, "no more directives")
-            }
-        }
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-        fun onStop() {
-            directivesSubscription?.close()
-            sensors.stopAll()
-        }
-
-        override fun onEvent(event: Event) {
-            server.currentClientSession?.sendEvent(event)
-        }
-
-        private fun runDirectiveOnUiThread(directive: Directive) {
-            when (directive) {
-                is Directive.MakeVibrate -> vibrator.vibrate(100)
-                is Directive.SetColor -> onSetColor(directive)
-                is Directive.TransitionColors -> onTransitionColors(directive)
-                is Directive.SetBrightness -> onSetBrightness(directive)
-                is Directive.SetLed -> flashlight.set(directive.intensity)
-                is Directive.ShowImage -> onShowImage(directive)
-                is Directive.PlayVideo -> onPlayVideo(directive)
-                is Directive.RegisterTouch -> sketch.startTouchListening(directive.multi, directive.drag)
-                is Directive.ReleaseTouch -> sketch.stopTouchListening()
-                is Directive.RegisterDistance -> sensors.startSensor(Proximity::class)
-                is Directive.ReleaseDistance -> sensors.stopSensor(Proximity::class)
-                is Directive.RegisterAttitude -> sensors.startSensor(Attitude::class, directive.updateRate.toMicros())
-                is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
-                is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class)
-                is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
-                is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
-                is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
-            }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
-        }
-
-    }
+    override fun startTouchListening(multi: Boolean, drag: Boolean) = sketch.startTouchListening(multi, drag)
+    override fun stopTouchListening() = sketch.stopTouchListening()
 }
+
+interface ShowtimeView {
+    fun setColor(directive: Directive.SetColor)
+    fun transitionColors(directive: Directive.TransitionColors)
+    fun setBrightness(directive: Directive.SetBrightness)
+    fun startTouchListening(multi: Boolean, drag: Boolean)
+    fun stopTouchListening()
+    fun showImage(directive: Directive.ShowImage)
+    fun playVideo(directive: Directive.PlayVideo)
+}
+
