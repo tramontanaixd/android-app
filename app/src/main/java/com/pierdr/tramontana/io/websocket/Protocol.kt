@@ -132,6 +132,12 @@ class Protocol {
                     .setString("m", "distanceChanged")
                     .setString("proximity", "${event.distance}")
         }
+        is Event.Magnetometer -> {
+            JSONObject()
+                    .setString("m", "magnetometerUpdate")
+                    .setString("i", "1")
+                    .setString("t", "${event.magnitude}")
+        }
         is Event.VideoEnded -> {
             JSONObject()
                     .setString("m", "videoEnded")

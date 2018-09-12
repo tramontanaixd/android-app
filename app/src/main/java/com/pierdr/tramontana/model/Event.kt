@@ -51,6 +51,10 @@ sealed class Event {
             val distance: Float
     ) : Event()
 
+    data class Magnetometer(
+            val magnitude: Float
+    ) : Event()
+
     object VideoEnded : Event()
 }
 
