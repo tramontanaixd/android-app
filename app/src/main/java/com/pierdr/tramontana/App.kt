@@ -11,6 +11,7 @@ import com.pierdr.tramontana.io.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
 import com.pierdr.tramontana.model.Server
 import com.pierdr.tramontana.model.UserReporter
+import com.pierdr.tramontana.ui.Flashlight
 import com.pierdr.tramontana.ui.MainPresenter
 import com.pierdr.tramontana.ui.ToastReporter
 import org.koin.android.ext.android.startKoin
@@ -41,15 +42,11 @@ class App : Application() {
 fun appModule() = module {
     single { get<Context>().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     single { get<Context>().getSystemService(Context.CAMERA_SERVICE) as CameraManager }
-
     single { MainPresenter() }
-
     single<Server> { WebsocketServer() }
-
     single<UserReporter> { ToastReporter(get()) }
-
+    single { Flashlight() }
     single { Sensors() }
-
     single {
         val applicationContext = get<Context>()
         HttpProxyCacheServer.Builder(applicationContext)

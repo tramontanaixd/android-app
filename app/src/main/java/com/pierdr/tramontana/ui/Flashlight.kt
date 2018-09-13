@@ -1,5 +1,6 @@
 package com.pierdr.tramontana.ui
 
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import com.pierdr.tramontana.model.UserReporter
@@ -10,12 +11,21 @@ class Flashlight : KoinComponent {
     private val cameraManager: CameraManager by inject()
     private val userReporter: UserReporter by inject()
 
+    private val cameraId by lazy {
+        cameraManager.cameraIdList.firstOrNull { cameraId ->
+            cameraManager.getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
+        }
+    }
+
     fun set(value: Float) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             userReporter.showWarning("Camera not available, unable to set flashlight")
-            return
         } else {
-            val cameraId: String = cameraManager.cameraIdList[0]
+            val cameraIdLocal = cameraId
+            if (cameraIdLocal == null) {
+                userReporter.showWarning("No flashlight available")
+                return
+            }
             cameraManager.setTorchMode(cameraId, value > 0)
         }
     }
