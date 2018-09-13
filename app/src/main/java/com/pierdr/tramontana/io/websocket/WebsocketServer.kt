@@ -21,7 +21,7 @@ import kotlin.coroutines.experimental.suspendCoroutine
 
 class WebsocketServer : Server {
     private val TAG = javaClass.simpleName
-    private val websocketServer = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
+    private var websocketServer: PluggableBehaviorWebSocketServer? = null
     private val protocol = Protocol()
 
     private var currentSession: WebSocketClientSession? = null
@@ -35,20 +35,22 @@ class WebsocketServer : Server {
      */
     override suspend fun start() = suspendCoroutine<Unit> { continuation ->
         WebSocketImpl.DEBUG = false
-        websocketServer.connectionLostTimeout = 0
-        websocketServer.start()
-        websocketServer.attachBehavior(object : WebSocketServerBehavior() {
+        val server = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
+        websocketServer = server
+        server.connectionLostTimeout = 0
+        server.start()
+        server.attachBehavior(object : WebSocketServerBehavior() {
             override fun onStart() {
                 Log.i(TAG, "server started")
                 continuation.resume(Unit)
-                websocketServer.detachBehavior()
+                server.detachBehavior()
             }
 
             override fun onError(conn: WebSocket?, ex: Exception) {
                 Log.w(TAG, "unable to start server: $ex")
                 if (conn != null) throw IllegalStateException("didn't expect a connection, but here it is: $conn")
                 continuation.resumeWithException(ex)
-                websocketServer.detachBehavior()
+                server.detachBehavior()
             }
         })
 
@@ -62,18 +64,20 @@ class WebsocketServer : Server {
      * will stop too.
      */
     override fun stop() {
-        Log.d(TAG, "stopping server")
-        websocketServer.stop()
+        websocketServer?.let {
+            Log.d(TAG, "stopping server")
+            it.stop()
+        }
     }
 
     /**
      * Returns a [ReceiveChannel] that emits [ClientSession]s every time a new Tramontana client
      * connects to us. Only one connection at a time is supported. The channel stops when the server
-     * is stopped.
+     * is stopped. If the server is already stopped, this method returns a closed channel.
      */
     override fun produceClientSessions() = produce<ClientSession> {
         suspendCoroutine<Unit> { sessionsContinuation ->
-            websocketServer.attachBehavior(object : WebSocketServerBehavior() {
+            websocketServer?.attachBehavior(object : WebSocketServerBehavior() {
                 override fun onOpen(conn: WebSocket, handshake: ClientHandshake) {
                     Log.i(TAG, "onOpen $conn")
                     if (currentSession != null) throw IllegalStateException("multiple connections are not supported")
@@ -109,7 +113,7 @@ class WebsocketServer : Server {
                     currentSession = null
                     sessionsContinuation.resume(Unit)
                 }
-            })
+            }) ?: channel.close()
         }
     }
 }

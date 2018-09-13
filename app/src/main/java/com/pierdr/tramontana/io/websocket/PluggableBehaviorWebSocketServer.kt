@@ -1,5 +1,6 @@
 package com.pierdr.tramontana.io.websocket
 
+import android.util.Log
 import org.java_websocket.WebSocket
 import org.java_websocket.drafts.Draft
 import org.java_websocket.handshake.ClientHandshake
@@ -38,6 +39,7 @@ class PluggableBehaviorWebSocketServer(
         address: InetSocketAddress,
         drafts: List<Draft>
 ) : WebSocketServer(address, drafts) {
+    private val tag = "PBWebSocketServer"
     private var behavior: WebSocketServerBehavior = NullBehavior()
 
     fun attachBehavior(newBehavior: WebSocketServerBehavior) {
@@ -45,6 +47,7 @@ class PluggableBehaviorWebSocketServer(
     }
 
     fun detachBehavior() {
+        Log.d(tag, "detachBehavior() called here: behavior=$behavior", Throwable())
         behavior = NullBehavior()
     }
 
@@ -69,6 +72,7 @@ class PluggableBehaviorWebSocketServer(
     }
 
     override fun stop() {
+        Log.d(tag, "stop() called here: behavior=$behavior", Throwable())
         behavior.onStop()
         behavior = NullBehavior()
         super.stop()
@@ -97,6 +101,6 @@ class NullBehavior : WebSocketServerBehavior() {
     }
 
     override fun onStop() {
-        throw IllegalStateException("onStop() with null behavior")
+        // gracefully handle stop events by doing nothing
     }
 }
