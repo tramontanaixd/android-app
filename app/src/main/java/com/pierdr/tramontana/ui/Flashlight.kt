@@ -4,6 +4,8 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import com.pierdr.tramontana.model.UserReporter
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 
@@ -27,6 +29,18 @@ class Flashlight : KoinComponent {
                 return
             }
             cameraManager.setTorchMode(cameraId, value > 0)
+        }
+    }
+
+    fun pulse(numberOfPulses: Int, durationMillis: Int) {
+        // TODO cancel previous pulse job
+        launch {
+            for (i in 0 until numberOfPulses) {
+                set(1f)
+                delay(durationMillis)
+                set(0f)
+                delay(durationMillis)
+            }
         }
     }
 

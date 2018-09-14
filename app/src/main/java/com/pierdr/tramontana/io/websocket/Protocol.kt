@@ -26,6 +26,7 @@ class Protocol {
             "transitionColors" -> parseTransitionColors(json)
             "setBrightness" -> Directive.SetBrightness(json.getFloat("b"))
             "setLED" -> Directive.SetLed(json.getFloat("in"))
+            "pulseLED" -> Directive.PulseLed(json.getInt("t"), (json.getFloat("d") * 1000).toInt(), 1f)
             "showImage" -> Directive.ShowImage(json.getString("url"))
             "playVideo" -> Directive.PlayVideo(json.getString("url"))
             "registerTouch", "registerTouchDrag" -> parseRegisterTouch(json)

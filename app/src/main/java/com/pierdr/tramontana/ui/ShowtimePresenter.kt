@@ -63,6 +63,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
             is Directive.TransitionColors -> viewLocal.transitionColors(directive)
             is Directive.SetBrightness -> viewLocal.setBrightness(directive)
             is Directive.SetLed -> flashlight.set(directive.intensity)
+            is Directive.PulseLed -> flashlight.pulse(directive.numberOfPulses, directive.durationMillis)
             is Directive.ShowImage -> viewLocal.showImage(directive)
             is Directive.PlayVideo -> viewLocal.playVideo(directive)
             is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
