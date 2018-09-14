@@ -4,6 +4,8 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import com.pierdr.tramontana.model.UserReporter
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.cancelAndJoin
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
@@ -12,6 +14,7 @@ import org.koin.standalone.inject
 class Flashlight : KoinComponent {
     private val cameraManager: CameraManager by inject()
     private val userReporter: UserReporter by inject()
+    private var pulseJob: Job? = null
 
     private val cameraId by lazy {
         cameraManager.cameraIdList.firstOrNull { cameraId ->
@@ -33,8 +36,9 @@ class Flashlight : KoinComponent {
     }
 
     fun pulse(numberOfPulses: Int, durationMillis: Int) {
-        // TODO cancel previous pulse job
-        launch {
+        val previousPulseJob = pulseJob
+        pulseJob = launch {
+            previousPulseJob?.cancelAndJoin()
             for (i in 0 until numberOfPulses) {
                 set(1f)
                 delay(durationMillis)
