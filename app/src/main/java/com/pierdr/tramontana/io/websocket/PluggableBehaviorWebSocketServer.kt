@@ -72,7 +72,6 @@ class PluggableBehaviorWebSocketServer(
     }
 
     override fun stop() {
-        Log.d(tag, "stop() called here: behavior=$behavior", Throwable())
         behavior.onStop()
         behavior = NullBehavior()
         super.stop()

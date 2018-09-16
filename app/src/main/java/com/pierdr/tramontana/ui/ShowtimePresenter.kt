@@ -74,7 +74,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
             is Directive.ReleaseAttitude -> sensors.stopSensor(Attitude::class)
             is Directive.RegisterOrientation -> sensors.startSensor(Orientation::class)
             is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
-            is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class, directive.updateRate.toMicros())
+            is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class)
             is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }

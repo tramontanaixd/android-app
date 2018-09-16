@@ -37,7 +37,7 @@ class Protocol {
             "releaseAttitude" -> Directive.ReleaseAttitude
             "registerOrientation" -> Directive.RegisterOrientation
             "releaseOrientation" -> Directive.ReleaseOrientation
-            "registerMagnetometer" -> Directive.RegisterMagnetometer(json.getFloat("f"))
+            "registerMagnetometer" -> Directive.RegisterMagnetometer
             "releaseMagnetometer" -> Directive.ReleaseMagnetometer
 
             else -> throw IllegalArgumentException("invalid directive $directive")
@@ -136,8 +136,8 @@ class Protocol {
         is Event.Magnetometer -> {
             JSONObject()
                     .setString("m", "magnetometerUpdate")
-                    .setString("i", "1")
-                    .setString("t", "${event.magnitude}")
+                    .setString("i", "${event.intensity}")
+                    .setString("t", "${event.threshold}")
         }
         is Event.VideoEnded -> {
             JSONObject()

@@ -193,6 +193,6 @@ class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAnd
 class Magnetometer(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_MAGNETIC_FIELD) {
     override fun onSensorChanged(event: SensorEvent) {
         val magnitude = Math.sqrt(event.values.map { it * it }.fold(0.0) { sum, x -> sum + x })
-        eventSink.onEvent(Event.Magnetometer(magnitude.toFloat()))
+        eventSink.onEvent(Event.Magnetometer(if (magnitude > 70.0) 1 else 0, magnitude.toFloat()))
     }
 }

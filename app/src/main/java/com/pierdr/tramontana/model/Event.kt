@@ -52,7 +52,8 @@ sealed class Event {
     ) : Event()
 
     data class Magnetometer(
-            val magnitude: Float
+            val threshold: Int,
+            val intensity: Float
     ) : Event()
 
     object VideoEnded : Event()

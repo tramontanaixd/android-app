@@ -71,9 +71,7 @@ sealed class Directive {
 
     object ReleaseAttitude : Directive()
 
-    data class RegisterMagnetometer(
-            val updateRate: Float
-    ) : Directive()
+    object RegisterMagnetometer : Directive()
 
     object ReleaseMagnetometer : Directive()
 }
