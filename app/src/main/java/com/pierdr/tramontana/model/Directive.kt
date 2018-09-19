@@ -74,5 +74,7 @@ sealed class Directive {
     object RegisterMagnetometer : Directive()
 
     object ReleaseMagnetometer : Directive()
+
+    object GetBattery : Directive()
 }
 

@@ -1,6 +1,5 @@
 package com.pierdr.tramontana.io.websocket
 
-import android.util.Log
 import org.java_websocket.WebSocket
 import org.java_websocket.drafts.Draft
 import org.java_websocket.handshake.ClientHandshake
@@ -47,7 +46,6 @@ class PluggableBehaviorWebSocketServer(
     }
 
     fun detachBehavior() {
-        Log.d(tag, "detachBehavior() called here: behavior=$behavior", Throwable())
         behavior = NullBehavior()
     }
 

@@ -7,6 +7,7 @@ import android.os.Vibrator
 import com.bugfender.sdk.Bugfender
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.BuildConfig
+import com.pierdr.tramontana.io.PowerMonitor
 import com.pierdr.tramontana.io.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
 import com.pierdr.tramontana.model.Server
@@ -53,4 +54,5 @@ fun appModule() = module {
                 .cacheDirectory(File(applicationContext.externalCacheDir, "video-cache"))
                 .build()
     }
+    single { PowerMonitor() }
 }

@@ -23,6 +23,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
     private val sensors: Sensors by inject()
     private val vibrator: Vibrator by inject()
     private val flashlight: Flashlight by inject()
+    private val powerMonitor: PowerMonitor by inject()
     private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
 
     var view: ShowtimeView? = null
@@ -76,6 +77,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
             is Directive.ReleaseOrientation -> sensors.stopSensor(Orientation::class)
             is Directive.RegisterMagnetometer -> sensors.startSensor(Magnetometer::class)
             is Directive.ReleaseMagnetometer -> sensors.stopSensor(Magnetometer::class)
+            is Directive.GetBattery -> powerMonitor.sendBatteryLevel()
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 

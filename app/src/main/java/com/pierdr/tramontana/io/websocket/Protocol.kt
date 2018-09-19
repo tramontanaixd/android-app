@@ -39,7 +39,7 @@ class Protocol {
             "releaseOrientation" -> Directive.ReleaseOrientation
             "registerMagnetometer" -> Directive.RegisterMagnetometer
             "releaseMagnetometer" -> Directive.ReleaseMagnetometer
-
+            "getBattery" -> Directive.GetBattery
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
@@ -142,6 +142,11 @@ class Protocol {
         is Event.VideoEnded -> {
             JSONObject()
                     .setString("m", "videoEnded")
+        }
+        is Event.BatteryLevel -> {
+            JSONObject()
+                    .setString("m", "battery")
+                    .setString("v", "${event.fraction}")
         }
     }.toString()
 

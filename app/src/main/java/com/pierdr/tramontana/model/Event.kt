@@ -57,6 +57,10 @@ sealed class Event {
     ) : Event()
 
     object VideoEnded : Event()
+
+    data class BatteryLevel(
+        val fraction: Float
+    ) : Event()
 }
 
 data class TouchPoint(
