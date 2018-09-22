@@ -65,6 +65,10 @@ sealed class Event {
     data class PowerSourceChanged(
             val pluggedIn: Boolean
     ) : Event()
+
+    class AudioJackChanged(
+            val pluggedIn: Boolean
+    ) : Event()
 }
 
 data class TouchPoint(

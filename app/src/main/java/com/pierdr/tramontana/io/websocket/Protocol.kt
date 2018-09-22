@@ -42,6 +42,8 @@ class Protocol {
             "getBattery" -> Directive.GetBattery
             "registerPowerSource" -> Directive.RegisterPowerSource
             "releasePowerSource" -> Directive.ReleasePowerSource
+            "registerAudioJack" -> Directive.RegisterAudioJack
+            "releaseAudioJack" -> Directive.ReleaseAudioJack
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
@@ -155,6 +157,11 @@ class Protocol {
                     .setString("m", "powerSourceChanged")
                     .setString("source", if (event.pluggedIn) "1" else "0")
         }
+        is Event.AudioJackChanged -> {
+            JSONObject()
+                    .setString("m", "audioJackChanged")
+                    .setString("in", if (event.pluggedIn) "1" else "0")
+        }
     }.toString()
 
     private fun JSONObject.setXyMembers(x: Int, y: Int) = this
@@ -168,7 +175,7 @@ class Protocol {
                 }
             })
 
-    private fun Event.Orientation.Direction.toIndex() = when(this) {
+    private fun Event.Orientation.Direction.toIndex() = when (this) {
         Event.Orientation.Direction.PORTRAIT -> 0
         Event.Orientation.Direction.PORTRAIT_UPSIDE_DOWN -> 1
         Event.Orientation.Direction.LANDSCAPE_LEFT -> 2

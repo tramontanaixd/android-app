@@ -80,6 +80,8 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
             is Directive.GetBattery -> powerMonitor.sendBatteryLevel()
             is Directive.RegisterPowerSource -> sensors.startSensor(PowerSource::class)
             is Directive.ReleasePowerSource -> sensors.stopSensor(PowerSource::class)
+            is Directive.RegisterAudioJack -> sensors.startSensor(AudioJack::class)
+            is Directive.ReleaseAudioJack -> sensors.stopSensor(AudioJack::class)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 

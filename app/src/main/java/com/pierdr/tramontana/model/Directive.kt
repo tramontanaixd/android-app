@@ -80,5 +80,9 @@ sealed class Directive {
     object RegisterPowerSource : Directive()
 
     object ReleasePowerSource : Directive()
+
+    object RegisterAudioJack : Directive()
+
+    object ReleaseAudioJack : Directive()
 }
 

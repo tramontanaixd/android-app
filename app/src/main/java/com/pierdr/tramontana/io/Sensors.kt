@@ -42,7 +42,8 @@ class Sensors : LifecycleObserver, KoinComponent {
                 Attitude(eventSink, applicationContext),
                 Orientation(eventSink, applicationContext),
                 Magnetometer(eventSink, applicationContext),
-                PowerSource(eventSink, applicationContext)
+                PowerSource(eventSink, applicationContext),
+                AudioJack(eventSink, applicationContext)
         )
         availableSensors = allSensors
                 .filter { it.isAvailable }
@@ -103,7 +104,7 @@ abstract class SimpleAndroidSensor(
         isRunning = false
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 }
 
 class Proximity(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_PROXIMITY) {
@@ -147,7 +148,7 @@ class Attitude(eventSink: EventSink, applicationContext: Context) : TramontanaSe
         isRunning = false
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
     override fun onSensorChanged(event: SensorEvent) {
         lastValues[event.sensor] = event.values.clone()
@@ -249,5 +250,19 @@ class PowerSource(
     override fun onIntent(intent: Intent) {
         val plugged: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
         eventSink.onEvent(Event.PowerSourceChanged(plugged > 0))
+    }
+}
+
+class AudioJack(
+        eventSink: EventSink,
+        applicationContext: Context
+) : IntentBasedSensor(eventSink, applicationContext) {
+
+    override val intentFilter: IntentFilter
+        get() = IntentFilter(Intent.ACTION_HEADSET_PLUG)
+
+    override fun onIntent(intent: Intent) {
+        val plugged: Int = intent.getIntExtra("state", 0)
+        eventSink.onEvent(Event.AudioJackChanged(plugged > 0))
     }
 }
