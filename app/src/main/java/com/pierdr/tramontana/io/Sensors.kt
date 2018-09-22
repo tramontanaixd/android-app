@@ -1,11 +1,15 @@
 package com.pierdr.tramontana.io
 
 import android.arch.lifecycle.LifecycleObserver
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.BatteryManager
 import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
@@ -16,6 +20,9 @@ import org.koin.standalone.inject
 import java.util.*
 import kotlin.reflect.KClass
 
+/**
+ * Handles sensor-like event sources that a client can subscribe and unsubscribe to.
+ */
 class Sensors : LifecycleObserver, KoinComponent {
     private val tag = "Sensors"
     private val applicationContext: Context by inject()
@@ -34,7 +41,8 @@ class Sensors : LifecycleObserver, KoinComponent {
                 Proximity(eventSink, applicationContext),
                 Attitude(eventSink, applicationContext),
                 Orientation(eventSink, applicationContext),
-                Magnetometer(eventSink, applicationContext)
+                Magnetometer(eventSink, applicationContext),
+                PowerSource(eventSink, applicationContext)
         )
         availableSensors = allSensors
                 .filter { it.isAvailable }
@@ -194,5 +202,36 @@ class Magnetometer(eventSink: EventSink, applicationContext: Context) : SimpleAn
     override fun onSensorChanged(event: SensorEvent) {
         val magnitude = Math.sqrt(event.values.map { it * it }.fold(0.0) { sum, x -> sum + x })
         eventSink.onEvent(Event.Magnetometer(if (magnitude > 70.0) 1 else 0, magnitude.toFloat()))
+    }
+}
+
+class PowerSource(
+        eventSink: EventSink,
+        private val applicationContext: Context
+) : TramontanaSensor(eventSink) {
+    private var receiver: BroadcastReceiver? = null
+
+    override val isAvailable: Boolean
+        get() = true
+
+    override fun start(samplingPeriodUs: Int) {
+        val receiverLocal = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent) {
+                val plugged: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+                eventSink.onEvent(Event.PowerSourceChanged(plugged > 0))
+            }
+        }
+        applicationContext.registerReceiver(receiverLocal, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        receiver = receiverLocal
+    }
+
+    override val isRunning: Boolean
+        get() = receiver != null
+
+    override fun stop() {
+        receiver?.let {
+            applicationContext.unregisterReceiver(it)
+            receiver = null
+        }
     }
 }

@@ -61,6 +61,10 @@ sealed class Event {
     data class BatteryLevel(
         val fraction: Float
     ) : Event()
+
+    data class PowerSourceChanged(
+            val pluggedIn: Boolean
+    ) : Event()
 }
 
 data class TouchPoint(

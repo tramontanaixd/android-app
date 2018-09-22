@@ -40,6 +40,8 @@ class Protocol {
             "registerMagnetometer" -> Directive.RegisterMagnetometer
             "releaseMagnetometer" -> Directive.ReleaseMagnetometer
             "getBattery" -> Directive.GetBattery
+            "registerPowerSource" -> Directive.RegisterPowerSource
+            "releasePowerSource" -> Directive.ReleasePowerSource
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
@@ -147,6 +149,11 @@ class Protocol {
             JSONObject()
                     .setString("m", "battery")
                     .setString("v", "${event.fraction}")
+        }
+        is Event.PowerSourceChanged -> {
+            JSONObject()
+                    .setString("m", "powerSourceChanged")
+                    .setString("source", if (event.pluggedIn) "1" else "0")
         }
     }.toString()
 
