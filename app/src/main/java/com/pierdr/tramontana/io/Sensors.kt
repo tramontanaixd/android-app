@@ -205,7 +205,7 @@ class Magnetometer(eventSink: EventSink, applicationContext: Context) : SimpleAn
     }
 }
 
-class PowerSource(
+abstract class IntentBasedSensor(
         eventSink: EventSink,
         private val applicationContext: Context
 ) : TramontanaSensor(eventSink) {
@@ -217,13 +217,15 @@ class PowerSource(
     override fun start(samplingPeriodUs: Int) {
         val receiverLocal = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
-                val plugged: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
-                eventSink.onEvent(Event.PowerSourceChanged(plugged > 0))
+                onIntent(intent)
             }
         }
-        applicationContext.registerReceiver(receiverLocal, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        applicationContext.registerReceiver(receiverLocal, intentFilter)
         receiver = receiverLocal
     }
+
+    abstract val intentFilter: IntentFilter
+    abstract fun onIntent(intent: Intent)
 
     override val isRunning: Boolean
         get() = receiver != null
@@ -233,5 +235,19 @@ class PowerSource(
             applicationContext.unregisterReceiver(it)
             receiver = null
         }
+    }
+}
+
+class PowerSource(
+        eventSink: EventSink,
+        applicationContext: Context)
+    : IntentBasedSensor(eventSink, applicationContext) {
+
+    override val intentFilter: IntentFilter
+        get() = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+
+    override fun onIntent(intent: Intent) {
+        val plugged: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+        eventSink.onEvent(Event.PowerSourceChanged(plugged > 0))
     }
 }
