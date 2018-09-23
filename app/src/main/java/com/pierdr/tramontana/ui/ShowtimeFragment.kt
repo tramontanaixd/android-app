@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.R
 import com.pierdr.tramontana.model.Directive
-import com.pierdr.tramontana.model.Event
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_showtime.*
 import org.koin.standalone.KoinComponent
@@ -32,7 +31,7 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
     }
 
     private val presenter = ShowtimePresenter()
-    private val sketch by lazy { Sketch(presenter) }
+    private val sketch by lazy { Sketch() }
     private val brightnessController = BrightnessController(this)
     private val videoProxy: HttpProxyCacheServer by inject()
 
@@ -115,7 +114,7 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
             video.start()
         }
         video.setOnCompletionListener {
-            presenter.onEvent(Event.VideoEnded)
+            presenter.onVideoEnded()
         }
         val proxyUrl = videoProxy.getProxyUrl(url)
         video.setVideoPath(proxyUrl)

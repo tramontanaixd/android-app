@@ -17,13 +17,14 @@ import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 
-class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
+class ShowtimePresenter : LifecycleObserver, KoinComponent {
     private val tag = "DirectiveListener"
     private val server: Server by inject()
     private val sensors: Sensors by inject()
     private val vibrator: Vibrator by inject()
     private val flashlight: Flashlight by inject()
     private val powerMonitor: PowerMonitor by inject()
+    private val eventSink: EventSink by inject()
     private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
 
     var view: ShowtimeView? = null
@@ -50,10 +51,6 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
     fun onStop() {
         directivesSubscription?.close()
         sensors.stopAll()
-    }
-
-    override fun onEvent(event: Event) {
-        server.currentClientSession?.sendEvent(event)
     }
 
     private fun runDirectiveOnUiThread(directive: Directive) {
@@ -86,4 +83,8 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, EventSink {
     }
 
     private fun Float.toMicros() = (1_000_000 / this).toInt()
+
+    fun onVideoEnded() {
+        eventSink.onEvent(Event.VideoEnded)
+    }
 }

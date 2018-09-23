@@ -13,7 +13,6 @@ import android.os.BatteryManager
 import android.util.Log
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
-import com.pierdr.tramontana.model.Server
 import com.pierdr.tramontana.model.UserReporter
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
@@ -25,25 +24,17 @@ import kotlin.reflect.KClass
  */
 class Sensors : LifecycleObserver, KoinComponent {
     private val tag = "Sensors"
-    private val applicationContext: Context by inject()
     private val userReporter: UserReporter by inject()
-    private val server: Server by inject()
     private val availableSensors: Map<KClass<out TramontanaSensor>, TramontanaSensor>
-
-    private val eventSink = object : EventSink {
-        override fun onEvent(event: Event) {
-            server.currentClientSession?.sendEvent(event)
-        }
-    }
 
     init {
         val allSensors: List<TramontanaSensor> = listOf(
-                Proximity(eventSink, applicationContext),
-                Attitude(eventSink, applicationContext),
-                Orientation(eventSink, applicationContext),
-                Magnetometer(eventSink, applicationContext),
-                PowerSource(eventSink, applicationContext),
-                AudioJack(eventSink, applicationContext)
+                Proximity(),
+                Attitude(),
+                Orientation(),
+                Magnetometer(),
+                PowerSource(),
+                AudioJack()
         )
         availableSensors = allSensors
                 .filter { it.isAvailable }
@@ -69,9 +60,8 @@ class Sensors : LifecycleObserver, KoinComponent {
     }
 }
 
-sealed class TramontanaSensor(
-        val eventSink: EventSink
-) {
+sealed class TramontanaSensor : KoinComponent {
+    val eventSink: EventSink by inject()
     abstract val isAvailable: Boolean
     abstract fun start(samplingPeriodUs: Int)
     abstract val isRunning: Boolean
@@ -80,10 +70,9 @@ sealed class TramontanaSensor(
 
 /** A [TramontanaSensor] that directly maps to an Android [android.hardware.Sensor]. */
 abstract class SimpleAndroidSensor(
-        eventSink: EventSink,
-        applicationContext: Context,
         type: Int
-) : TramontanaSensor(eventSink), SensorEventListener {
+) : TramontanaSensor(), SensorEventListener {
+    private val applicationContext: Context by inject()
     private val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensor = sensorManager.getDefaultSensor(type)
 
@@ -107,18 +96,19 @@ abstract class SimpleAndroidSensor(
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 }
 
-class Proximity(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_PROXIMITY) {
+class Proximity : SimpleAndroidSensor(Sensor.TYPE_PROXIMITY) {
     override fun onSensorChanged(event: SensorEvent) {
         eventSink.onEvent(Event.Distance(event.values[0]))
     }
 }
 
-class Attitude(eventSink: EventSink, applicationContext: Context) : TramontanaSensor(eventSink), SensorEventListener {
+class Attitude : TramontanaSensor(), SensorEventListener {
     private val tag = "Orientation"
     private val rotationMatrix = FloatArray(16)
     private val inclinationMatrix = FloatArray(9)
     private val orientationVector = FloatArray(3)
 
+    private val applicationContext: Context by inject()
     private val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     private val magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
@@ -172,7 +162,7 @@ class Attitude(eventSink: EventSink, applicationContext: Context) : TramontanaSe
 
 const val HALF_GRAVITY = SensorManager.GRAVITY_EARTH / 2
 
-class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_ACCELEROMETER) {
+class Orientation : SimpleAndroidSensor(Sensor.TYPE_ACCELEROMETER) {
     private val tag = "Orientation"
     private var lastDirection: Event.Orientation.Direction? = null
 
@@ -199,17 +189,15 @@ class Orientation(eventSink: EventSink, applicationContext: Context) : SimpleAnd
     }
 }
 
-class Magnetometer(eventSink: EventSink, applicationContext: Context) : SimpleAndroidSensor(eventSink, applicationContext, Sensor.TYPE_MAGNETIC_FIELD) {
+class Magnetometer : SimpleAndroidSensor(Sensor.TYPE_MAGNETIC_FIELD) {
     override fun onSensorChanged(event: SensorEvent) {
         val magnitude = Math.sqrt(event.values.map { it * it }.fold(0.0) { sum, x -> sum + x })
         eventSink.onEvent(Event.Magnetometer(if (magnitude > 70.0) 1 else 0, magnitude.toFloat()))
     }
 }
 
-abstract class IntentBasedSensor(
-        eventSink: EventSink,
-        private val applicationContext: Context
-) : TramontanaSensor(eventSink) {
+abstract class IntentBasedSensor : TramontanaSensor() {
+    private val applicationContext: Context by inject()
     private var receiver: BroadcastReceiver? = null
 
     override val isAvailable: Boolean
@@ -239,11 +227,7 @@ abstract class IntentBasedSensor(
     }
 }
 
-class PowerSource(
-        eventSink: EventSink,
-        applicationContext: Context)
-    : IntentBasedSensor(eventSink, applicationContext) {
-
+class PowerSource : IntentBasedSensor() {
     override val intentFilter: IntentFilter
         get() = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
 
@@ -253,11 +237,7 @@ class PowerSource(
     }
 }
 
-class AudioJack(
-        eventSink: EventSink,
-        applicationContext: Context
-) : IntentBasedSensor(eventSink, applicationContext) {
-
+class AudioJack : IntentBasedSensor() {
     override val intentFilter: IntentFilter
         get() = IntentFilter(Intent.ACTION_HEADSET_PLUG)
 

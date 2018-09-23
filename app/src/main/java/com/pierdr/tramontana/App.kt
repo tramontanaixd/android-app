@@ -10,6 +10,8 @@ import com.pierdr.pierluigidallarosa.myactivity.BuildConfig
 import com.pierdr.tramontana.io.PowerMonitor
 import com.pierdr.tramontana.io.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
 import com.pierdr.tramontana.model.UserReporter
 import com.pierdr.tramontana.ui.Flashlight
@@ -55,4 +57,13 @@ fun appModule() = module {
                 .build()
     }
     single { PowerMonitor() }
+
+    single<EventSink> {
+        val server = get<Server>()
+        object : EventSink {
+            override fun onEvent(event: Event) {
+                server.currentClientSession?.sendEvent(event)
+            }
+        }
+    }
 }
