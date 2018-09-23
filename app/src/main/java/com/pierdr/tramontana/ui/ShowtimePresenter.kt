@@ -57,13 +57,25 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
         val viewLocal = view ?: return
         when (directive) {
             is Directive.MakeVibrate -> vibrator.vibrate(100)
-            is Directive.SetColor -> viewLocal.setColor(directive)
-            is Directive.TransitionColors -> viewLocal.transitionColors(directive)
+            is Directive.SetColor -> {
+                contentToShow = ContentToShow.SolidColor
+                viewLocal.setColor(directive)
+            }
+            is Directive.TransitionColors -> {
+                contentToShow = ContentToShow.SolidColor
+                viewLocal.transitionColors(directive)
+            }
             is Directive.SetBrightness -> viewLocal.setBrightness(directive)
             is Directive.SetLed -> flashlight.set(directive.intensity)
             is Directive.PulseLed -> flashlight.pulse(directive.numberOfPulses, directive.durationMillis)
-            is Directive.ShowImage -> viewLocal.showImage(directive)
-            is Directive.PlayVideo -> viewLocal.playVideo(directive)
+            is Directive.ShowImage -> {
+                contentToShow = ContentToShow.Image
+                viewLocal.showImage(directive)
+            }
+            is Directive.PlayVideo -> {
+                contentToShow = ContentToShow.Video
+                viewLocal.playVideo(directive)
+            }
             is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> viewLocal.stopTouchListening()
             is Directive.RegisterDistance -> sensors.startSensor(Proximity::class)
@@ -86,5 +98,18 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
 
     fun onVideoEnded() {
         eventSink.onEvent(Event.VideoEnded)
+    }
+
+    private var contentToShow: ContentToShow = ContentToShow.SolidColor
+        set(value) {
+            view?.imageVisible = value == ContentToShow.Image
+            view?.videoVisible = value == ContentToShow.Video
+            field = value
+        }
+
+    private enum class ContentToShow {
+        SolidColor,
+        Image,
+        Video
     }
 }

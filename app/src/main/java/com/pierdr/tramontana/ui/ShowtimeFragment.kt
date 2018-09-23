@@ -24,24 +24,10 @@ import processing.android.PFragment
 class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
     private val TAG = javaClass.simpleName
 
-    private enum class ContentToShow {
-        SolidColor,
-        Image,
-        Video
-    }
-
     private val presenter = ShowtimePresenter()
     private val sketch by lazy { Sketch() }
     private val brightnessController = BrightnessController(this)
     private val videoProxy: HttpProxyCacheServer by inject()
-
-    private var contentToShow: ContentToShow = ContentToShow.SolidColor
-        set(value) {
-            Log.d(TAG, "set contentToShow current=$field new=$value")
-            image.visibility = if (value == ContentToShow.Image) View.VISIBLE else View.INVISIBLE
-            video.visibility = if (value == ContentToShow.Video) View.VISIBLE else View.INVISIBLE
-            field = value
-        }
 
     init {
         lifecycle.addObserver(presenter)
@@ -69,8 +55,22 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
                 .commit()
     }
 
+    override var imageVisible: Boolean = false
+        set(value) {
+            image.visibleOrInvisible = value
+        }
+    override var videoVisible: Boolean = false
+        set(value) {
+            video.visibleOrInvisible = value
+        }
+
+    private var View.visibleOrInvisible
+        get() = visibility == View.VISIBLE
+        set(value) {
+            visibility = if (value) View.VISIBLE else View.INVISIBLE
+        }
+
     override fun setColor(directive: Directive.SetColor) {
-        contentToShow = ContentToShow.SolidColor
         sketch.setColor(directive.red, directive.green, directive.blue)
         brightnessController.set(directive.alpha / 255.0f)
     }
@@ -80,7 +80,6 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
     }
 
     override fun transitionColors(directive: Directive.TransitionColors) {
-        contentToShow = ContentToShow.SolidColor
         sketch.transitionColors(
                 directive.fromRed,
                 directive.fromGreen,
@@ -97,7 +96,6 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
     }
 
     override fun showImage(directive: Directive.ShowImage) {
-        contentToShow = ContentToShow.Image
         Picasso.get()
                 .load(directive.url)
                 .into(image)
@@ -107,7 +105,6 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
         val url = directive.url
 
         video.setZOrderOnTop(true)
-        contentToShow = ContentToShow.Video
         Log.d(TAG, "loading video $url")
         video.setOnPreparedListener {
             Log.d(TAG, "starting video $url")
@@ -125,6 +122,8 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
 }
 
 interface ShowtimeView {
+    var imageVisible: Boolean
+    var videoVisible: Boolean
     fun setColor(directive: Directive.SetColor)
     fun transitionColors(directive: Directive.TransitionColors)
     fun setBrightness(directive: Directive.SetBrightness)
