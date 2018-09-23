@@ -7,6 +7,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 apply from: "bugfender.gradle"
+apply from: "signing.gradle"
 
 android {
     compileSdkVersion 27
@@ -14,14 +15,15 @@ android {
         applicationId "com.pierdr.pierluigidallarosa.myactivity"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -60,8 +62,4 @@ kotlin {
     experimental {
         coroutines "enable"
     }
-}
-
-dependencies {
-
 }
