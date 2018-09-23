@@ -101,9 +101,7 @@ class ShowtimeFragment : Fragment(), ShowtimeView, KoinComponent {
                 .into(image)
     }
 
-    override fun playVideo(directive: Directive.PlayVideo) {
-        val url = directive.url
-
+    override fun playVideo(url: String) {
         video.setZOrderOnTop(true)
         Log.d(TAG, "loading video $url")
         video.setOnPreparedListener {
@@ -130,6 +128,6 @@ interface ShowtimeView {
     fun startTouchListening(multi: Boolean, drag: Boolean)
     fun stopTouchListening()
     fun showImage(directive: Directive.ShowImage)
-    fun playVideo(directive: Directive.PlayVideo)
+    fun playVideo(url: String)
 }
 

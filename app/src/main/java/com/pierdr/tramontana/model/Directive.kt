@@ -50,6 +50,10 @@ sealed class Directive {
             val url: String
     ) : Directive()
 
+    data class PlayAudio(
+            val url: String
+    ) : Directive()
+
     data class RegisterTouch(
             val multi: Boolean,
             val drag: Boolean

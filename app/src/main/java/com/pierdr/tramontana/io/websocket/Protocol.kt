@@ -29,6 +29,7 @@ class Protocol {
             "pulseLED" -> Directive.PulseLed(json.getInt("t"), (json.getFloat("d") * 1000).toInt(), 1f)
             "showImage" -> Directive.ShowImage(json.getString("url"))
             "playVideo" -> Directive.PlayVideo(json.getString("url"))
+            "playAudio" -> Directive.PlayAudio(json.getString("url"))
             "registerTouch", "registerTouchDrag" -> parseRegisterTouch(json)
             "releaseTouch", "releaseTouchDrag" -> Directive.ReleaseTouch
             "registerDistance" -> Directive.RegisterDistance

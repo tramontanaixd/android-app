@@ -74,7 +74,11 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
             }
             is Directive.PlayVideo -> {
                 contentToShow = ContentToShow.Video
-                viewLocal.playVideo(directive)
+                viewLocal.playVideo(directive.url)
+            }
+            is Directive.PlayAudio -> {
+                contentToShow = ContentToShow.Video
+                viewLocal.playVideo(directive.url)
             }
             is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
             is Directive.ReleaseTouch -> viewLocal.stopTouchListening()
