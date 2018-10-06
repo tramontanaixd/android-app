@@ -6,14 +6,14 @@ import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import android.os.Vibrator
 import android.util.Log
-import com.pierdr.tramontana.io.*
+import com.pierdr.tramontana.io.PowerMonitor
+import com.pierdr.tramontana.io.sensor.*
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject

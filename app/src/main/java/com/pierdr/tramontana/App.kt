@@ -8,7 +8,7 @@ import com.bugfender.sdk.Bugfender
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.BuildConfig
 import com.pierdr.tramontana.io.PowerMonitor
-import com.pierdr.tramontana.io.Sensors
+import com.pierdr.tramontana.io.sensor.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
