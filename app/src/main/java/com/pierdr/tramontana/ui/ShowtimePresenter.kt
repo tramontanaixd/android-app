@@ -12,6 +12,7 @@ import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
 import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
@@ -25,7 +26,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
     private val flashlight: Flashlight by inject()
     private val powerMonitor: PowerMonitor by inject()
     private val eventSink: EventSink by inject()
-    private var directivesSubscription: SubscriptionReceiveChannel<Directive>? = null
+    private var directivesSubscription: ReceiveChannel<Directive>? = null
 
     var view: ShowtimeView? = null
 
@@ -49,7 +50,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun onStop() {
-        directivesSubscription?.close()
+        directivesSubscription?.cancel()
         sensors.stopAll()
     }
 

@@ -1,6 +1,6 @@
 package com.pierdr.tramontana.model
 
-import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 
 /**
  * Represents an established connection with a client, from which one can exchange data. The
@@ -11,7 +11,7 @@ import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
  */
 interface ClientSession {
     fun sendEvent(event: Event)
-    fun subscribeToDirectives(): SubscriptionReceiveChannel<Directive>
+    fun subscribeToDirectives(): ReceiveChannel<Directive>
     val isClosed: Boolean
     fun close()
 }

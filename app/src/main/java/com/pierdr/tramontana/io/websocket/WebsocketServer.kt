@@ -140,7 +140,7 @@ class WebSocketClientSession(
         }
     }
 
-    override fun subscribeToDirectives(): SubscriptionReceiveChannel<Directive> = directivesChannel.openSubscription()
+    override fun subscribeToDirectives(): ReceiveChannel<Directive> = directivesChannel.openSubscription()
 
     override fun close() {
         connection.close()
