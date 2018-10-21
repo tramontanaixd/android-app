@@ -101,6 +101,8 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
             is Directive.ReleaseAudioJack -> sensors.stopSensor(AudioJack::class)
             is Directive.SendAttitudeToOSC -> startAttitudeToOSC(directive)
             is Directive.StopAttitudeToOSC -> stopAttitudeToOSC()
+            is Directive.SendTouchToOSC -> startTouchToOSC(directive, viewLocal)
+            is Directive.StopTouchToOSC -> stopTouchToOSC(viewLocal)
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 
@@ -119,6 +121,16 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
     private fun stopAttitudeToOSC() {
         oscSender.stopAttitudeSend()
         sensors.stopSensor(Attitude::class)
+    }
+
+    private fun startTouchToOSC(directive: Directive.SendTouchToOSC, view: ShowtimeView) {
+        view.startTouchListening(true, true)
+        oscSender.startTouchSend(directive.address, directive.port)
+    }
+
+    private fun stopTouchToOSC(view: ShowtimeView) {
+        oscSender.stopTouchSend()
+        view.stopTouchListening()
     }
 
     private var contentToShow: ContentToShow = ContentToShow.SolidColor

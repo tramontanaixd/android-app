@@ -9,6 +9,7 @@ import java.net.InetAddress
 
 class OscSender : EventSink {
     private var attitudeSession: OscSession? = null
+    private var touchSession: OscSession? = null
 
     fun startAttitudeSend(clientAddress: String, udpPort: Int) {
         val sender = OSCPortOut(InetAddress.getByName(clientAddress), udpPort)
@@ -19,8 +20,18 @@ class OscSender : EventSink {
         attitudeSession = null
     }
 
+    fun startTouchSend(clientAddress: String, udpPort: Int) {
+        val sender = OSCPortOut(InetAddress.getByName(clientAddress), udpPort)
+        touchSession = OscSession(sender)
+    }
+
+    fun stopTouchSend() {
+        touchSession = null
+    }
+
     override fun onEvent(event: Event) {
         attitudeSession?.send(event)
+        touchSession?.send(event)
     }
 }
 
@@ -31,6 +42,14 @@ class OscSession(
         if (event is Event.Attitude) {
             launch {
                 val msg = OSCMessage("/wek/inputs", listOf(event.yaw, event.roll, event.pitch))
+                sender.send(msg)
+            }
+        }
+        if (event is Event.MultiTouchDrag) {
+            launch {
+                val args = listOf(event.touches.size)
+                        .plus(event.touches.flatMap { listOf(it.x, it.y) })
+                val msg = OSCMessage("/wek/inputs", args)
                 sender.send(msg)
             }
         }

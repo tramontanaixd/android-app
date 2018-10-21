@@ -96,5 +96,13 @@ sealed class Directive {
     ) : Directive()
 
     object StopAttitudeToOSC : Directive()
+
+    data class SendTouchToOSC(
+            val address: String,
+            val port: Int,
+            val maxNumFingers: Int
+    ) : Directive()
+
+    object StopTouchToOSC : Directive()
 }
 

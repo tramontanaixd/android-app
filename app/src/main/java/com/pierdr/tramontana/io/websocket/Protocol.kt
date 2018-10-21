@@ -47,15 +47,23 @@ class Protocol {
             "releaseAudioJack" -> Directive.ReleaseAudioJack
             "a2w" -> parseSendAttitudeToOSC(json)
             "sa2w" -> Directive.StopAttitudeToOSC
+            "t2w" -> parseSendTouchToOSC(json)
+            "st2w" -> Directive.StopTouchToOSC
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
     }
 
+    private fun parseSendTouchToOSC(json: JSONObject) = Directive.SendTouchToOSC(
+            address = json.getString("i"),
+            port = json.getString("p").toInt(),
+            maxNumFingers = json.getString("n").toInt()
+    )
+
     private fun parseSendAttitudeToOSC(json: JSONObject) = Directive.SendAttitudeToOSC(
-            json.getString("i"),
-            json.getString("p").toInt(),
-            json.getString("f").toFloat().coerceAtMost(29f))
+            address = json.getString("i"),
+            port = json.getString("p").toInt(),
+            updateRate = json.getString("f").toFloat().coerceAtMost(29f))
 
     private fun parseTransitionColors(json: JSONObject) = Directive.TransitionColors(
             json.getFloatColor("r1"),
