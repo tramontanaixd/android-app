@@ -55,7 +55,7 @@ class Protocol {
     private fun parseSendAttitudeToOSC(json: JSONObject) = Directive.SendAttitudeToOSC(
             json.getString("i"),
             json.getString("p").toInt(),
-            json.getString("f").toFloat())
+            json.getString("f").toFloat().coerceAtMost(29f))
 
     private fun parseTransitionColors(json: JSONObject) = Directive.TransitionColors(
             json.getFloatColor("r1"),
