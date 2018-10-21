@@ -6,6 +6,7 @@ import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import android.os.Vibrator
 import android.util.Log
+import com.pierdr.tramontana.io.OscSender
 import com.pierdr.tramontana.io.PowerMonitor
 import com.pierdr.tramontana.io.sensor.*
 import com.pierdr.tramontana.model.Directive
@@ -17,6 +18,7 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
+import kotlin.math.roundToInt
 
 class ShowtimePresenter : LifecycleObserver, KoinComponent {
     private val tag = "DirectiveListener"
@@ -26,6 +28,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
     private val flashlight: Flashlight by inject()
     private val powerMonitor: PowerMonitor by inject()
     private val eventSink: EventSink by inject()
+    private val oscSender: OscSender by inject()
     private var directivesSubscription: ReceiveChannel<Directive>? = null
 
     var view: ShowtimeView? = null
@@ -96,6 +99,8 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
             is Directive.ReleasePowerSource -> sensors.stopSensor(PowerSource::class)
             is Directive.RegisterAudioJack -> sensors.startSensor(AudioJack::class)
             is Directive.ReleaseAudioJack -> sensors.stopSensor(AudioJack::class)
+            is Directive.SendAttitudeToOSC -> startAttitudeToOSC(directive)
+            is Directive.StopAttitudeToOSC -> stopAttitudeToOSC()
         }.javaClass // .javaClass is added to make an "exhaustive when", see https://youtrack.jetbrains.com/issue/KT-12380#focus=streamItem-27-2727497-0-0
     }
 
@@ -103,6 +108,17 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
 
     fun onVideoEnded() {
         eventSink.onEvent(Event.VideoEnded)
+    }
+
+    private fun startAttitudeToOSC(directive: Directive.SendAttitudeToOSC) {
+        sensors.stopSensor(Attitude::class)
+        oscSender.startAttitudeSend(directive.address, directive.port)
+        sensors.startSensor(Attitude::class, (1_000_000f / directive.updateRate).roundToInt())
+    }
+
+    private fun stopAttitudeToOSC() {
+        oscSender.stopAttitudeSend()
+        sensors.stopSensor(Attitude::class)
     }
 
     private var contentToShow: ContentToShow = ContentToShow.SolidColor

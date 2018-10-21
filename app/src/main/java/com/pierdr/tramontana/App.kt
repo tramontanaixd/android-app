@@ -7,6 +7,7 @@ import android.os.Vibrator
 import com.bugfender.sdk.Bugfender
 import com.danikula.videocache.HttpProxyCacheServer
 import com.pierdr.pierluigidallarosa.myactivity.BuildConfig
+import com.pierdr.tramontana.io.OscSender
 import com.pierdr.tramontana.io.PowerMonitor
 import com.pierdr.tramontana.io.sensor.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
@@ -58,11 +59,14 @@ fun appModule() = module {
     }
     single { PowerMonitor() }
 
+    single { OscSender() }
+
     single<EventSink> {
         val server = get<Server>()
         object : EventSink {
             override fun onEvent(event: Event) {
                 server.currentClientSession?.sendEvent(event)
+                get<OscSender>().onEvent(event)
             }
         }
     }

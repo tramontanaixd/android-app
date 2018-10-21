@@ -88,5 +88,13 @@ sealed class Directive {
     object RegisterAudioJack : Directive()
 
     object ReleaseAudioJack : Directive()
+
+    data class SendAttitudeToOSC(
+            val address: String,
+            val port: Int,
+            val updateRate: Float
+    ) : Directive()
+
+    object StopAttitudeToOSC : Directive()
 }
 

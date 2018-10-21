@@ -45,10 +45,17 @@ class Protocol {
             "releasePowerSource" -> Directive.ReleasePowerSource
             "registerAudioJack" -> Directive.RegisterAudioJack
             "releaseAudioJack" -> Directive.ReleaseAudioJack
+            "a2w" -> parseSendAttitudeToOSC(json)
+            "sa2w" -> Directive.StopAttitudeToOSC
             else -> throw IllegalArgumentException("invalid directive $directive")
         }
 
     }
+
+    private fun parseSendAttitudeToOSC(json: JSONObject) = Directive.SendAttitudeToOSC(
+            json.getString("i"),
+            json.getString("p").toInt(),
+            json.getString("f").toFloat())
 
     private fun parseTransitionColors(json: JSONObject) = Directive.TransitionColors(
             json.getFloatColor("r1"),
