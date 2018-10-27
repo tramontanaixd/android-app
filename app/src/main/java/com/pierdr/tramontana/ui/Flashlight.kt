@@ -43,9 +43,9 @@ class Flashlight : KoinComponent, CoroutineScope {
             previousPulseJob?.cancelAndJoin()
             for (i in 0 until numberOfPulses) {
                 set(1f)
-                delay(durationMillis)
+                delay(durationMillis.toLong())
                 set(0f)
-                delay(durationMillis)
+                delay(durationMillis.toLong())
             }
         }
     }

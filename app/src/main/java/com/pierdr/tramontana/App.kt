@@ -12,10 +12,7 @@ import com.pierdr.tramontana.io.OscSender
 import com.pierdr.tramontana.io.PowerMonitor
 import com.pierdr.tramontana.io.sensor.Sensors
 import com.pierdr.tramontana.io.websocket.WebsocketServer
-import com.pierdr.tramontana.model.Event
-import com.pierdr.tramontana.model.EventSink
-import com.pierdr.tramontana.model.Server
-import com.pierdr.tramontana.model.UserReporter
+import com.pierdr.tramontana.model.*
 import com.pierdr.tramontana.ui.Flashlight
 import com.pierdr.tramontana.ui.MainPresenter
 import com.pierdr.tramontana.ui.ToastReporter
@@ -45,6 +42,7 @@ class App : Application() {
 }
 
 fun appModule() = module {
+    single { Dispatcher() }
     single { get<Context>().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     single { get<Context>().getSystemService(Context.CAMERA_SERVICE) as CameraManager }
     single { get<Context>().getSystemService(Context.NSD_SERVICE) as NsdManager }

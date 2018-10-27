@@ -14,7 +14,7 @@ sealed class Directive {
             val green: Int,
             val blue: Int,
             val alpha: Int
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class TransitionColors(
             val fromRed: Int,
@@ -26,15 +26,15 @@ sealed class Directive {
             val toBlue: Int,
             val toAlpha: Int,
             val duration: Int
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class SetBrightness(
             val brightness: Float
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class SetLed(
             val intensity: Float
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class PulseLed(
             val numberOfPulses: Int,
@@ -44,22 +44,22 @@ sealed class Directive {
 
     data class ShowImage(
             val url: String
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class PlayVideo(
             val url: String
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class PlayAudio(
             val url: String
-    ) : Directive()
+    ) : Directive(), UiDirective
 
     data class RegisterTouch(
             val multi: Boolean,
             val drag: Boolean
-    ) : Directive()
+    ) : Directive(), UiDirective
 
-    object ReleaseTouch : Directive()
+    object ReleaseTouch : Directive(), UiDirective
 
     object RegisterDistance : Directive()
 
@@ -106,3 +106,8 @@ sealed class Directive {
     object StopTouchToOSC : Directive()
 }
 
+interface UiDirective
+
+object StartUi : UiDirective
+
+object StopUi : UiDirective
