@@ -7,12 +7,19 @@ import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
 import com.pierdr.tramontana.model.ClientSession
 import com.pierdr.tramontana.model.Server
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
+import kotlin.coroutines.CoroutineContext
 
 
-class MainPresenter : LifecycleObserver, KoinComponent {
+class MainPresenter : LifecycleObserver, KoinComponent, CoroutineScope {
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     private val TAG = javaClass.simpleName
     private val server: Server by inject()
@@ -49,6 +56,7 @@ class MainPresenter : LifecycleObserver, KoinComponent {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun stop() {
+        job.cancel()
         server.stop()
     }
 }

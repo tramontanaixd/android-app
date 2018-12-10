@@ -5,21 +5,29 @@ import com.pierdr.tramontana.model.ClientSession
 import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.Server
-import kotlinx.coroutines.experimental.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.launch
 import org.java_websocket.WebSocket
 import org.java_websocket.WebSocketImpl
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.exceptions.WebsocketNotConnectedException
 import org.java_websocket.handshake.ClientHandshake
-import java.lang.Exception
 import java.net.InetSocketAddress
-import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
-class WebsocketServer : Server {
+class WebsocketServer : Server, CoroutineScope {
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + job
+
     private val TAG = javaClass.simpleName
     private var websocketServer: PluggableBehaviorWebSocketServer? = null
     private val protocol = Protocol()
@@ -64,6 +72,7 @@ class WebsocketServer : Server {
      * will stop too.
      */
     override fun stop() {
+        job.cancel()
         websocketServer?.let {
             Log.d(TAG, "stopping server")
             it.stop()

@@ -3,6 +3,7 @@ package com.pierdr.tramontana
 import android.app.Application
 import android.content.Context
 import android.hardware.camera2.CameraManager
+import android.net.nsd.NsdManager
 import android.os.Vibrator
 import com.bugfender.sdk.Bugfender
 import com.danikula.videocache.HttpProxyCacheServer
@@ -46,6 +47,7 @@ class App : Application() {
 fun appModule() = module {
     single { get<Context>().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     single { get<Context>().getSystemService(Context.CAMERA_SERVICE) as CameraManager }
+    single { get<Context>().getSystemService(Context.NSD_SERVICE) as NsdManager }
     single { MainPresenter() }
     single<Server> { WebsocketServer() }
     single<UserReporter> { ToastReporter(get()) }

@@ -38,7 +38,7 @@ sealed class Directive {
 
     data class PulseLed(
             val numberOfPulses: Int,
-            val durationMillis: Int,
+            val durationMillis: Long,
             val intensity: Float
     ) : Directive()
 

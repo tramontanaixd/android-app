@@ -1,6 +1,6 @@
 package com.pierdr.tramontana.model
 
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.channels.ReceiveChannel
 
 /**
  * Represents an established connection with a client, from which one can exchange data. The

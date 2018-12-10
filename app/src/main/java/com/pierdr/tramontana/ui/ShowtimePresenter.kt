@@ -13,14 +13,21 @@ import com.pierdr.tramontana.model.Directive
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
 import com.pierdr.tramontana.model.Server
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
-class ShowtimePresenter : LifecycleObserver, KoinComponent {
+class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     private val tag = "DirectiveListener"
     private val server: Server by inject()
     private val sensors: Sensors by inject()
@@ -43,7 +50,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
             val subscription = server.currentClientSession!!.subscribeToDirectives()
             directivesSubscription = subscription
             for (directive in subscription) {
-                launch(UI) {
+                launch {
                     runDirectiveOnUiThread(directive)
                 }
             }
@@ -53,8 +60,10 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun onStop() {
+        job.cancel()
         directivesSubscription?.cancel()
         sensors.stopAll()
+        flashlight.stop()
     }
 
     private fun runDirectiveOnUiThread(directive: Directive) {

@@ -4,8 +4,12 @@ import com.illposed.osc.OSCMessage
 import com.illposed.osc.OSCPortOut
 import com.pierdr.tramontana.model.Event
 import com.pierdr.tramontana.model.EventSink
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.net.InetAddress
+import kotlin.coroutines.CoroutineContext
 
 class OscSender : EventSink {
     private var attitudeSession: OscSession? = null
@@ -17,6 +21,7 @@ class OscSender : EventSink {
     }
 
     fun stopAttitudeSend() {
+        attitudeSession?.stop()
         attitudeSession = null
     }
 
@@ -26,6 +31,7 @@ class OscSender : EventSink {
     }
 
     fun stopTouchSend() {
+        attitudeSession?.stop()
         touchSession = null
     }
 
@@ -37,7 +43,11 @@ class OscSender : EventSink {
 
 class OscSession(
         private val sender: OSCPortOut
-) {
+): CoroutineScope {
+    private var job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + job
+
     fun send(event: Event) {
         if (event is Event.Attitude) {
             launch {
@@ -53,5 +63,9 @@ class OscSession(
                 sender.send(msg)
             }
         }
+    }
+
+    fun stop() {
+        job.cancel()
     }
 }
