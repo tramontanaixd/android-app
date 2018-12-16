@@ -5,12 +5,15 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
-import com.pierdr.tramontana.model.*
+import com.pierdr.tramontana.model.Directive
+import com.pierdr.tramontana.model.Dispatcher
+import com.pierdr.tramontana.model.Event
+import com.pierdr.tramontana.model.EventSink
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import kotlin.coroutines.CoroutineContext
@@ -19,7 +22,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
     private val tag = "DirectiveListener"
     private val eventSink: EventSink by inject()
     private val dispatcher: Dispatcher by inject()
-    private var directivesSubscription: ReceiveChannel<UiDirective>? = null
+    private var directivesSubscription: ReceiveChannel<Directive.NeedsUi>? = null
 
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext

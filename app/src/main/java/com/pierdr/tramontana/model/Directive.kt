@@ -7,6 +7,12 @@ package com.pierdr.tramontana.model
  * and used.
  */
 sealed class Directive {
+    interface NeedsUi
+    interface StartsEventsToClient
+    interface StopsEventsToClient
+    interface StartsEventsToOSC
+    interface StopsEventsToOSC
+
     object MakeVibrate : Directive()
 
     data class SetColor(
@@ -14,7 +20,7 @@ sealed class Directive {
             val green: Int,
             val blue: Int,
             val alpha: Int
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class TransitionColors(
             val fromRed: Int,
@@ -26,15 +32,15 @@ sealed class Directive {
             val toBlue: Int,
             val toAlpha: Int,
             val duration: Int
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class SetBrightness(
             val brightness: Float
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class SetLed(
             val intensity: Float
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class PulseLed(
             val numberOfPulses: Int,
@@ -44,70 +50,68 @@ sealed class Directive {
 
     data class ShowImage(
             val url: String
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class PlayVideo(
             val url: String
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class PlayAudio(
             val url: String
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi
 
     data class RegisterTouch(
             val multi: Boolean,
             val drag: Boolean
-    ) : Directive(), UiDirective
+    ) : Directive(), NeedsUi, StartsEventsToClient
 
-    object ReleaseTouch : Directive(), UiDirective
+    object ReleaseTouch : Directive(), NeedsUi, StopsEventsToClient
 
-    object RegisterDistance : Directive()
+    object RegisterDistance : Directive(), StartsEventsToClient
 
-    object ReleaseDistance : Directive()
+    object ReleaseDistance : Directive(), StopsEventsToClient
 
-    object RegisterOrientation : Directive()
+    object RegisterOrientation : Directive(), StartsEventsToClient
 
-    object ReleaseOrientation : Directive()
+    object ReleaseOrientation : Directive(), StopsEventsToClient
 
     data class RegisterAttitude(
             val updateRate: Float
-    ) : Directive()
+    ) : Directive(), StartsEventsToClient
 
-    object ReleaseAttitude : Directive()
+    object ReleaseAttitude : Directive(), StopsEventsToClient
 
-    object RegisterMagnetometer : Directive()
+    object RegisterMagnetometer : Directive(), StartsEventsToClient
 
-    object ReleaseMagnetometer : Directive()
+    object ReleaseMagnetometer : Directive(), StopsEventsToClient
 
     object GetBattery : Directive()
 
-    object RegisterPowerSource : Directive()
+    object RegisterPowerSource : Directive(), StartsEventsToClient
 
-    object ReleasePowerSource : Directive()
+    object ReleasePowerSource : Directive(), StopsEventsToClient
 
-    object RegisterAudioJack : Directive()
+    object RegisterAudioJack : Directive(), StartsEventsToClient
 
-    object ReleaseAudioJack : Directive()
+    object ReleaseAudioJack : Directive(), StopsEventsToClient
 
     data class SendAttitudeToOSC(
             val address: String,
             val port: Int,
             val updateRate: Float
-    ) : Directive()
+    ) : Directive(), StartsEventsToOSC
 
-    object StopAttitudeToOSC : Directive()
+    object StopAttitudeToOSC : Directive(), StopsEventsToOSC
 
     data class SendTouchToOSC(
             val address: String,
             val port: Int,
             val maxNumFingers: Int
-    ) : Directive()
+    ) : Directive(), StartsEventsToOSC, StopsEventsToOSC
 
     object StopTouchToOSC : Directive()
 }
 
-interface UiDirective
+object StartUi : Directive.NeedsUi
 
-object StartUi : UiDirective
-
-object StopUi : UiDirective
+object StopUi : Directive.NeedsUi
