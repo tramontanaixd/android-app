@@ -24,7 +24,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class WebsocketServer : Server, CoroutineScope {
-    private val job = Job()
+    private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
@@ -41,27 +41,30 @@ class WebsocketServer : Server, CoroutineScope {
      *
      * This method will suspend until the server is successfully started, or an error occurs.
      */
-    override suspend fun start() = suspendCoroutine<Unit> { continuation ->
-        WebSocketImpl.DEBUG = false
-        val server = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
-        websocketServer = server
-        server.connectionLostTimeout = 0
-        server.start()
-        server.attachBehavior(object : WebSocketServerBehavior() {
-            override fun onStart() {
-                Log.i(TAG, "server started")
-                continuation.resume(Unit)
-                server.detachBehavior()
-            }
+    override suspend fun start() {
+        job = Job()
+        suspendCoroutine<Unit> { continuation ->
+            WebSocketImpl.DEBUG = false
+            val server = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
+            websocketServer = server
+            server.connectionLostTimeout = 0
+            server.start()
+            server.attachBehavior(object : WebSocketServerBehavior() {
+                override fun onStart() {
+                    Log.i(TAG, "server started")
+                    continuation.resume(Unit)
+                    server.detachBehavior()
+                }
 
-            override fun onError(conn: WebSocket?, ex: Exception) {
-                Log.w(TAG, "unable to start server: $ex")
-                if (conn != null) throw IllegalStateException("didn't expect a connection, but here it is: $conn")
-                continuation.resumeWithException(ex)
-                server.detachBehavior()
-            }
-        })
+                override fun onError(conn: WebSocket?, ex: Exception) {
+                    Log.w(TAG, "unable to start server: $ex")
+                    if (conn != null) throw IllegalStateException("didn't expect a connection, but here it is: $conn")
+                    continuation.resumeWithException(ex)
+                    server.detachBehavior()
+                }
+            })
 
+        }
     }
 
     /**

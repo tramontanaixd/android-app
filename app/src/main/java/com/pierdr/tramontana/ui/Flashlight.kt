@@ -12,7 +12,7 @@ import kotlin.coroutines.CoroutineContext
 class Flashlight : KoinComponent, CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
+        get() = Dispatchers.Main + job
 
     private val cameraManager: CameraManager by inject()
     private val userReporter: UserReporter by inject()
@@ -51,6 +51,6 @@ class Flashlight : KoinComponent, CoroutineScope {
     }
 
     fun stop() {
-        job.cancel()
+        pulseJob?.cancel()
     }
 }

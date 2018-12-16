@@ -24,7 +24,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
-    private val job = Job()
+    private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
@@ -42,6 +42,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onStart(owner: LifecycleOwner) {
+        job = Job()
         view = owner as ShowtimeView
 
         launch {

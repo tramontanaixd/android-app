@@ -17,7 +17,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 class MainPresenter : LifecycleObserver, KoinComponent, CoroutineScope {
-    private val job = Job()
+    private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
@@ -26,16 +26,18 @@ class MainPresenter : LifecycleObserver, KoinComponent, CoroutineScope {
     private var view: MainView? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun start(owner: LifecycleOwner) = launch {
+    fun start(owner: LifecycleOwner) {
+        job = Job()
         view = owner as MainView
         view?.showReadyFragment()
 
-        server.start()
-        Log.d(TAG, "waiting for client sessions")
-        for (clientSession in server.produceClientSessions()) {
-            handleClientSession(clientSession)
+        launch {
+            server.start()
+            for (clientSession in server.produceClientSessions()) {
+                handleClientSession(clientSession)
+            }
+            Log.d(TAG, "no more client sessions")
         }
-        Log.d(TAG, "no more client sessions")
     }
 
     private fun handleClientSession(session: ClientSession) {
