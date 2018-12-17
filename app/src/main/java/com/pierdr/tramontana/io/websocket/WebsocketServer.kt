@@ -48,6 +48,7 @@ class WebsocketServer : Server, CoroutineScope {
             val server = PluggableBehaviorWebSocketServer(InetSocketAddress(9092), listOf(Draft_6455()))
             websocketServer = server
             server.connectionLostTimeout = 0
+            server.isReuseAddr = true
             server.start()
             server.attachBehavior(object : WebSocketServerBehavior() {
                 override fun onStart() {

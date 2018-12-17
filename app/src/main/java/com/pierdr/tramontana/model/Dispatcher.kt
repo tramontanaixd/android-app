@@ -47,9 +47,9 @@ class Dispatcher : KoinComponent, CoroutineScope, EventSink {
 
     private val eventDestinations = mutableSetOf<EventSink>()
 
-    private lateinit var job: Job
+    private var job: Job? = null
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + job
+        get() = Dispatchers.IO + job!!
 
     private var uiDirectivesChannel = BroadcastChannel<Directive.NeedsUi>(10)
 
@@ -71,7 +71,7 @@ class Dispatcher : KoinComponent, CoroutineScope, EventSink {
     }
 
     fun stop() {
-        job.cancel()
+        job?.cancel()
         sensors.stopAll()
         flashlight.stop()
     }
