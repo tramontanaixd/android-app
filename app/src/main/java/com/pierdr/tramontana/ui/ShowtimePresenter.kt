@@ -19,7 +19,7 @@ import org.koin.standalone.inject
 import kotlin.coroutines.CoroutineContext
 
 class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
-    private val tag = "DirectiveListener"
+    private val tag = "ShowtimePresenter"
     private val eventSink: EventSink by inject()
     private val dispatcher: Dispatcher by inject()
     private var directivesSubscription: ReceiveChannel<Directive.NeedsUi>? = null
@@ -36,38 +36,46 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
         view = owner as ShowtimeView
 
         launch {
-            Log.d(tag, "waiting for directives")
+            Log.i(tag, "waiting for directives")
             val subscription = dispatcher.produceUiDirectives()
             directivesSubscription = subscription
-            for (directive in subscription) {
-                val viewLocal = owner
-                when (directive) {
-                    is Directive.SetBrightness -> viewLocal.setBrightness(directive)
-                    is Directive.SetColor -> {
-                        contentToShow = ContentToShow.SolidColor
-                        viewLocal.setColor(directive)
-                    }
-                    is Directive.TransitionColors -> {
-                        contentToShow = ContentToShow.SolidColor
-                        viewLocal.transitionColors(directive)
-                    }
-                    is Directive.ShowImage -> {
-                        contentToShow = ContentToShow.Image
-                        viewLocal.showImage(directive)
-                    }
-                    is Directive.PlayVideo -> {
-                        contentToShow = ContentToShow.Video
-                        viewLocal.playVideo(directive.url)
-                    }
-                    is Directive.PlayAudio -> {
-                        contentToShow = ContentToShow.Video
-                        viewLocal.playVideo(directive.url)
-                    }
-                    is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
-                    is Directive.ReleaseTouch -> viewLocal.stopTouchListening()
-                }
+            processDirectives(subscription)
+            Log.i(tag, "no more directives")
+        }
+    }
+
+    private suspend fun processDirectives(subscription: ReceiveChannel<Directive.NeedsUi>) {
+        for (directive in subscription) {
+            val viewLocal = view
+            if (viewLocal == null) {
+                Log.i(tag, "view is null, stopping processing directives")
+                break
             }
-            Log.d(tag, "no more directives")
+            when (directive) {
+                is Directive.SetBrightness -> viewLocal.setBrightness(directive)
+                is Directive.SetColor -> {
+                    contentToShow = ContentToShow.SolidColor
+                    viewLocal.setColor(directive)
+                }
+                is Directive.TransitionColors -> {
+                    contentToShow = ContentToShow.SolidColor
+                    viewLocal.transitionColors(directive)
+                }
+                is Directive.ShowImage -> {
+                    contentToShow = ContentToShow.Image
+                    viewLocal.showImage(directive)
+                }
+                is Directive.PlayVideo -> {
+                    contentToShow = ContentToShow.Video
+                    viewLocal.playVideo(directive.url)
+                }
+                is Directive.PlayAudio -> {
+                    contentToShow = ContentToShow.Video
+                    viewLocal.playVideo(directive.url)
+                }
+                is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
+                is Directive.ReleaseTouch -> viewLocal.stopTouchListening()
+            }
         }
     }
 
