@@ -38,7 +38,7 @@ class App : Application() {
             return
         }
 
-        Bugfender.init(this, BuildConfig.BUGFENDER_API_KEY, BuildConfig.DEBUG)
+        Bugfender.init(this, BuildConfig.BUGFENDER_API_KEY, true)
         Bugfender.enableLogcatLogging()
         Bugfender.enableUIEventLogging(this)
     }
