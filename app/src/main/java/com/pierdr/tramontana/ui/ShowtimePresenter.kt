@@ -28,7 +28,7 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    var view: ShowtimeView? = null
+    private var view: ShowtimeView? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onStart(owner: LifecycleOwner) {
@@ -44,23 +44,23 @@ class ShowtimePresenter : LifecycleObserver, KoinComponent, CoroutineScope {
                 when (directive) {
                     is Directive.SetBrightness -> viewLocal.setBrightness(directive)
                     is Directive.SetColor -> {
-                        contentToShow = ShowtimePresenter.ContentToShow.SolidColor
+                        contentToShow = ContentToShow.SolidColor
                         viewLocal.setColor(directive)
                     }
                     is Directive.TransitionColors -> {
-                        contentToShow = ShowtimePresenter.ContentToShow.SolidColor
+                        contentToShow = ContentToShow.SolidColor
                         viewLocal.transitionColors(directive)
                     }
                     is Directive.ShowImage -> {
-                        contentToShow = ShowtimePresenter.ContentToShow.Image
+                        contentToShow = ContentToShow.Image
                         viewLocal.showImage(directive)
                     }
                     is Directive.PlayVideo -> {
-                        contentToShow = ShowtimePresenter.ContentToShow.Video
+                        contentToShow = ContentToShow.Video
                         viewLocal.playVideo(directive.url)
                     }
                     is Directive.PlayAudio -> {
-                        contentToShow = ShowtimePresenter.ContentToShow.Video
+                        contentToShow = ContentToShow.Video
                         viewLocal.playVideo(directive.url)
                     }
                     is Directive.RegisterTouch -> viewLocal.startTouchListening(directive.multi, directive.drag)
