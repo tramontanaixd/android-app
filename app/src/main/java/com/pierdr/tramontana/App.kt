@@ -40,6 +40,7 @@ class App : Application() {
 
         Bugfender.init(this, BuildConfig.BUGFENDER_API_KEY, true)
         Bugfender.enableLogcatLogging()
+        Bugfender.enableCrashReporting()
         Bugfender.enableUIEventLogging(this)
     }
 }
