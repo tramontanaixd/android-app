@@ -22,4 +22,15 @@ class GivenNoActivityTest {
         client.connect()
         assertTrue(latch.await(1000, TimeUnit.MILLISECONDS))
     }
+
+    @Test
+    fun whenActivityPauses_theServerStops() {
+        activityTestRule.launchActivity(Intent())
+        activityTestRule.finishActivity()
+
+        val latch = CountDownLatch(1)
+        val client = TestClient(doOnError = { latch.countDown() })
+        client.connect()
+        assertTrue(latch.await(1000, TimeUnit.MILLISECONDS))
+    }
 }
