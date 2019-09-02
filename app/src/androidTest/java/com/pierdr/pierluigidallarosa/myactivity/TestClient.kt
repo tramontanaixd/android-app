@@ -5,8 +5,9 @@ import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
 
 open class TestClient(
-        private val doOnOpen: () -> Unit = {},
-        private val doOnError: (Exception) -> Unit = { throw it }
+        var doOnOpen: () -> Unit = {},
+        var doOnError: (Exception) -> Unit = { throw it },
+        var doOnMessage: (String) -> Unit = {}
 ) : WebSocketClient(URI.create("http://localhost:9092")) {
     override fun onOpen(handshakedata: ServerHandshake?) {
         doOnOpen()
@@ -15,10 +16,11 @@ open class TestClient(
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
     }
 
-    override fun onMessage(message: String?) {
+    override fun onMessage(message: String) {
+        doOnMessage(message)
     }
 
-    override fun onError(ex: Exception?) {
-        doOnError(ex!!)
+    override fun onError(ex: Exception) {
+        doOnError(ex)
     }
 }
