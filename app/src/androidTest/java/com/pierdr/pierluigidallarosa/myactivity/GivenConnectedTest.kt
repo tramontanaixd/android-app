@@ -5,6 +5,9 @@ import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.rule.ActivityTestRule
+import com.pierdr.pierluigidallarosa.myactivity.util.MockableClient
+import com.pierdr.pierluigidallarosa.myactivity.util.ViewVisibilityIdlingResource
+import com.pierdr.pierluigidallarosa.myactivity.util.WebSocketEndpoint
 import com.pierdr.tramontana.ui.TramontanaActivity
 import io.mockk.mockk
 import io.mockk.slot

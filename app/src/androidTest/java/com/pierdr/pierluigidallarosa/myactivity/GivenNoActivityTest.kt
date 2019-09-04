@@ -2,6 +2,7 @@ package com.pierdr.pierluigidallarosa.myactivity
 
 import android.content.Intent
 import androidx.test.rule.ActivityTestRule
+import com.pierdr.pierluigidallarosa.myactivity.util.TestClient
 import com.pierdr.tramontana.ui.TramontanaActivity
 import org.junit.Assert.assertTrue
 import org.junit.Rule

@@ -1,4 +1,4 @@
-package com.pierdr.pierluigidallarosa.myactivity
+package com.pierdr.pierluigidallarosa.myactivity.util
 
 import android.view.View
 

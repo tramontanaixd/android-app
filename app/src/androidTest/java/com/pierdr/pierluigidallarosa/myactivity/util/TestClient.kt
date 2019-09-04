@@ -1,4 +1,4 @@
-package com.pierdr.pierluigidallarosa.myactivity
+package com.pierdr.pierluigidallarosa.myactivity.util
 
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
