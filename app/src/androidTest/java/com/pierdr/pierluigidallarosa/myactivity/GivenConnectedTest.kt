@@ -10,14 +10,12 @@ import com.pierdr.pierluigidallarosa.myactivity.util.ViewVisibilityIdlingResourc
 import com.pierdr.pierluigidallarosa.myactivity.util.WebSocketEndpoint
 import com.pierdr.tramontana.ui.TramontanaActivity
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import processing.data.JSONObject
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GivenConnectedTest {
@@ -48,12 +46,18 @@ class GivenConnectedTest {
                 .setString("m", "registerTouch")
                 .toString())
 
-        onView(withId(R.id.sketch_container)).perform(click())
+        for (i in 1 until 10) {
+            onView(withId(R.id.sketch_container)).perform(click())
 
-        val messageSlot = slot<String>()
-        verify(timeout = 1000) { endpoint.onMessage(capture(messageSlot)) }
-        val json = JSONObject.parse(messageSlot.captured)
+            // note: doesn't actually verify message order: "verifyOrder" doesn't support timeout.
+            verify(timeout = 1000) { endpoint.onMessage(match { isMessageOfType(it, "touchedDown") }) }
+            verify(timeout = 1000) { endpoint.onMessage(match { isMessageOfType(it, "touched") }) }
+        }
+    }
+
+    private fun isMessageOfType(message: String, type: String): Boolean {
+        val json = JSONObject.parse(message)
         assertTrue(json.hasKey("m"))
-        assertEquals("touched", json.getString("m"))
+        return json.getString("m") == type
     }
 }
