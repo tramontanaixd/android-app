@@ -33,7 +33,6 @@ dependencies {
     def coroutines_version = "1.4.1"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation('org.p5android:processing-core:4.0.2') {
         exclude group: 'com.android.support'
