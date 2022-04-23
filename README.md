@@ -39,3 +39,8 @@ If you want to contribute to Tramontana, welcome! Feel free to create bug report
 
 After each accepted pull request the main contributors will compile and sign the app, and send it
 for approval to the Play Store.
+
+## License
+
+GNU AFFERO GENERAL PUBLIC LICENSE Version 3
+AGPL-3.0-only
