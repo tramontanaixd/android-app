@@ -1,6 +1,6 @@
 package com.pierdr.tramontana.io.sensor
 
-import android.arch.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleObserver
 import android.hardware.SensorManager
 import android.util.Log
 import com.pierdr.tramontana.model.UserReporter

@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,15 +29,15 @@ class ReadyFragment : Fragment() {
         super.onResume()
         updateWifiAddressView()
 
-        context!!.registerReceiver(connectivityChangesReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+        requireContext().registerReceiver(connectivityChangesReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
     }
 
     fun updateWifiAddressView() {
-        ipAddress.text = wifiIpAddress(context!!) ?: "no WiFi connectivity?"
+        ipAddress.text = wifiIpAddress(requireContext()) ?: "no WiFi connectivity?"
     }
 
     override fun onPause() {
-        context!!.unregisterReceiver(connectivityChangesReceiver)
+        requireContext().unregisterReceiver(connectivityChangesReceiver)
         super.onPause()
     }
 }

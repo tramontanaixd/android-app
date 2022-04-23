@@ -1,8 +1,8 @@
 package com.pierdr.tramontana.ui
 
 import android.animation.ValueAnimator
-import android.arch.lifecycle.LifecycleObserver
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleObserver
 
 class BrightnessController(
         private val fragment: Fragment
