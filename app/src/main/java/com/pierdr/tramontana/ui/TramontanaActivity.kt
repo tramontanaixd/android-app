@@ -1,8 +1,8 @@
 package com.pierdr.tramontana.ui
 
-import android.arch.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleOwner
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.pierdr.pierluigidallarosa.myactivity.R
 import org.koin.android.ext.android.inject
 

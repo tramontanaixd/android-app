@@ -122,11 +122,13 @@ class Dispatcher : KoinComponent, CoroutineScope, EventSink {
         when (directive) {
             is Directive.StopsEventsToClient -> eventDestinations -= clientEventDestination
             is Directive.StopsEventsToOSC -> eventDestinations -= oscEventDestination
+            else -> {}
         }
         action()
         when (directive) {
             is Directive.StartsEventsToClient -> eventDestinations += clientEventDestination
             is Directive.StartsEventsToOSC -> eventDestinations += oscEventDestination
+            else -> {}
         }
     }
 

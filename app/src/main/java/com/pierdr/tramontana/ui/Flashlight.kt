@@ -21,6 +21,7 @@ class Flashlight : KoinComponent, CoroutineScope {
     private val cameraId by lazy {
         cameraManager.cameraIdList.firstOrNull { cameraId ->
             cameraManager.getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
+                ?: false
         }
     }
 
@@ -28,8 +29,8 @@ class Flashlight : KoinComponent, CoroutineScope {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             userReporter.showWarning("Camera not available, unable to set flashlight")
         } else {
-            val cameraIdLocal = cameraId
-            if (cameraIdLocal == null) {
+            val cameraId = this.cameraId
+            if (cameraId == null) {
                 userReporter.showWarning("No flashlight available")
                 return
             }
@@ -43,9 +44,9 @@ class Flashlight : KoinComponent, CoroutineScope {
             previousPulseJob?.cancelAndJoin()
             for (i in 0 until numberOfPulses) {
                 set(1f)
-                delay(durationMillis.toLong())
+                delay(durationMillis)
                 set(0f)
-                delay(durationMillis.toLong())
+                delay(durationMillis)
             }
         }
     }
