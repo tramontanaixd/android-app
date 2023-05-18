@@ -15,7 +15,7 @@ android {
         applicationId "com.pierdr.pierluigidallarosa.myactivity"
         minSdkVersion 21
         targetSdkVersion 32
-        versionCode 4
+        versionCode 5
         versionName "1.2.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
